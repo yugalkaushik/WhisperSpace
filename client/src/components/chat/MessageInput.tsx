@@ -1,10 +1,9 @@
 import { useState, useContext, useEffect } from 'react';
-import { SocketContext } from '../../contexts/SocketContext';
+import { SocketContext } from '../../contexts/socket-context';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
-import Picker from '@emoji-mart/react';
-import data from '@emoji-mart/data';
-import { FaSmile } from 'react-icons/fa';
+import EmojiPicker from 'emoji-picker-react';
+import { Smile } from 'lucide-react';
 import { MESSAGE_TYPES, TYPING_TIMEOUT } from '../../utils/constants';
 
 const MessageInput = () => {
@@ -33,8 +32,8 @@ const MessageInput = () => {
     setTypingTimeout(timeout);
   };
 
-  const handleEmojiSelect = (emoji: any) => {
-    setMessage((prev) => prev + emoji.native);
+  const handleEmojiSelect = (emojiData: { emoji: string }) => {
+    setMessage((prev) => prev + emojiData.emoji);
     setShowEmojiPicker(false);
   };
 
@@ -53,13 +52,13 @@ const MessageInput = () => {
           className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
           aria-label="Emoji picker"
         >
-          <FaSmile />
+          <Smile className="w-5 h-5" />
         </button>
         <Input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={(e) => {
+          onKeyDown={(e) => {
             handleTyping();
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -75,7 +74,7 @@ const MessageInput = () => {
       </div>
       {showEmojiPicker && (
         <div className="absolute bottom-16 right-4 z-10">
-          <Picker data={data} onEmojiSelect={handleEmojiSelect} theme="auto" />
+          <EmojiPicker onEmojiClick={handleEmojiSelect} />
         </div>
       )}
     </div>

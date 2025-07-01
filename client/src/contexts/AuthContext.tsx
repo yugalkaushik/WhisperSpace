@@ -1,16 +1,7 @@
-import { createContext, ReactNode, useMemo } from 'react';
+import { useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { AuthContextType } from '../types';
-
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  token: null,
-  login: async () => {},
-  register: async () => {},
-  logout: () => {},
-  error: null,
-  loading: false,
-});
+import { AuthContext } from './auth-context';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const auth = useAuth();
@@ -24,6 +15,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout: auth.logout,
       error: auth.error,
       loading: auth.loading,
+      setAuthData: auth.setAuthData,
     }),
     [auth]
   );

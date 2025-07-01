@@ -1,13 +1,14 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
   title: string;
+  showCloseButton?: boolean;
 }
 
-const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
+const Modal = ({ isOpen, onClose, children, title, showCloseButton = true }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
@@ -15,12 +16,14 @@ const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">{title}</h2>
         {children}
-        <button
-          className="mt-4 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-          onClick={onClose}
-        >
-          Close
-        </button>
+        {showCloseButton && (
+          <button
+            className="mt-4 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,17 +1,30 @@
-import { useAuth0 } from '@auth0/auth0-react';
+import { useState } from 'react';
 import Button from '../ui/Button';
-import { FaGoogle } from 'react-icons/fa';
+import { ChromeIcon } from 'lucide-react';
+import { API_BASE_URL } from '../../utils/constants';
 
 const GoogleAuthButton = () => {
-  const { loginWithRedirect } = useAuth0();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGoogleLogin = () => {
+    setIsLoading(true);
+    try {
+      // Redirect to server's Google OAuth endpoint
+      window.location.href = `${API_BASE_URL}/auth/google`;
+    } catch (error) {
+      console.error('Google OAuth redirect failed:', error);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Button
       variant="secondary"
-      onClick={() => loginWithRedirect({ connection: 'google-oauth2' })}
+      onClick={handleGoogleLogin}
+      disabled={isLoading}
     >
-      <FaGoogle className="inline-block mr-2" />
-      Sign in with Google
+      <ChromeIcon className="inline-block mr-2 w-4 h-4" />
+      {isLoading ? 'Redirecting...' : 'Sign in with Google'}
     </Button>
   );
 };

@@ -1,38 +1,30 @@
-import { createContext, ReactNode, useState } from 'react';
-import { SocketContextType } from '../types';
-
-export const SocketContext = createContext<SocketContextType>({
-  socket: null,
-  connected: false,
-  onlineUsers: [],
-  messages: [],
-  typingUsers: [],
-  sendMessage: () => {},
-  editMessage: () => {},
-  deleteMessage: () => {},
-  joinRoom: () => {},
-  leaveRoom: () => {},
-  startTyping: () => {},
-  stopTyping: () => {},
-});
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+import type { Socket } from 'socket.io-client';
+import type { OnlineUser, Message, TypingUser, Room } from '../types';
+import { SocketContext } from './socket-context';
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
-  const [socket, setSocket] = useState<any>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
 
-  const sendMessage = (content: string, room: string = 'general') => {
-    socket?.emit('send_message', { content, room });
+  const sendMessage = (content: string, room?: string) => {
+    const roomToUse = room || currentRoom?.code || 'general';
+    socket?.emit('send_message', { content, room: roomToUse });
   };
 
-  const editMessage = (messageId: string, content: string, room: string = 'general') => {
-    socket?.emit('edit_message', { messageId, content, room });
+  const editMessage = (messageId: string, content: string, room?: string) => {
+    const roomToUse = room || currentRoom?.code || 'general';
+    socket?.emit('edit_message', { messageId, content, room: roomToUse });
   };
 
-  const deleteMessage = (messageId: string, room: string = 'general') => {
-    socket?.emit('delete_message', { messageId, room });
+  const deleteMessage = (messageId: string, room?: string) => {
+    const roomToUse = room || currentRoom?.code || 'general';
+    socket?.emit('delete_message', { messageId, room: roomToUse });
   };
 
   const joinRoom = (room: string) => {
@@ -40,15 +32,22 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const leaveRoom = (room: string) => {
+    console.log('Emitting leave_room for:', room);
     socket?.emit('leave_room', room);
+    // Clear current room if it's the one being left
+    if (currentRoom?.code === room) {
+      setCurrentRoom(null);
+    }
   };
 
-  const startTyping = (room: string = 'general') => {
-    socket?.emit('typing_start', { room });
+  const startTyping = (room?: string) => {
+    const roomToUse = room || currentRoom?.code || 'general';
+    socket?.emit('typing_start', { room: roomToUse });
   };
 
-  const stopTyping = (room: string = 'general') => {
-    socket?.emit('typing_stop', { room });
+  const stopTyping = (room?: string) => {
+    const roomToUse = room || currentRoom?.code || 'general';
+    socket?.emit('typing_stop', { room: roomToUse });
   };
 
   return (
@@ -59,6 +58,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         onlineUsers,
         messages,
         typingUsers,
+        currentRoom,
         sendMessage,
         editMessage,
         deleteMessage,
@@ -71,6 +71,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         setOnlineUsers,
         setMessages,
         setTypingUsers,
+        setCurrentRoom,
       }}
     >
       {children}

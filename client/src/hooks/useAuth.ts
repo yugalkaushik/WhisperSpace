@@ -1,53 +1,59 @@
 import { useState } from 'react';
-import axios from 'axios';
-import { User, AuthResponse } from '../types';
+import type { User } from '../types';
 import { useLocalStorage } from './useLocalStorage';
-import { API_BASE_URL } from '../utils/constants';
+import { STORAGE_KEYS } from '../utils/constants';
 
 export const useAuth = () => {
   const [user, setUser] = useLocalStorage<User | null>('chatflow_user', null);
   const [token, setToken] = useLocalStorage<string | null>('chatflow_token', null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
-  const login = async (email: string, password: string, token?: string) => {
-    setLoading(true);
+  // Set user and token (used by AuthCallback after Google OAuth)
+  const setAuthData = (userData: User, authToken: string) => {
+    // Load nickname and avatar from localStorage if they exist
+    const savedNickname = localStorage.getItem(STORAGE_KEYS.NICKNAME);
+    const savedAvatar = localStorage.getItem(STORAGE_KEYS.AVATAR);
+    
+    const enhancedUser = {
+      ...userData,
+      nickname: savedNickname || userData.nickname || userData.username,
+      selectedAvatar: savedAvatar || userData.selectedAvatar || 'avatar1'
+    };
+    
+    setUser(enhancedUser);
+    setToken(authToken);
     setError(null);
-    try {
-      const response = await axios.post<AuthResponse>(`${API_BASE_URL}/auth/login`, { email, password, token });
-      setUser(response.data.user);
-      setToken(response.data.token);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
   };
 
-  const register = async (username: string, email: string, password: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.post<AuthResponse>(`${API_BASE_URL}/auth/register`, {
-        username,
-        email,
-        password,
-      });
-      setUser(response.data.user);
-      setToken(response.data.token);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  // Placeholder functions for compatibility (OAuth flow handles actual auth)
+  const login = async () => {
+    // OAuth login is handled by redirecting to Google
+    setError('Please use Google Sign-In');
+  };
+
+  const register = async () => {
+    // OAuth registration is handled by redirecting to Google  
+    setError('Please use Google Sign-In');
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
+    setError(null);
+    // Clear profile data from localStorage
+    localStorage.removeItem(STORAGE_KEYS.NICKNAME);
+    localStorage.removeItem(STORAGE_KEYS.AVATAR);
   };
 
-  return { user, token, login, register, logout, error, loading };
+  return { 
+    user, 
+    token, 
+    login, 
+    register, 
+    logout, 
+    error, 
+    loading,
+    setAuthData 
+  };
 };

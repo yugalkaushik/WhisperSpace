@@ -5,6 +5,8 @@ export const STORAGE_KEYS = {
   TOKEN: 'chatflow_token',
   USER: 'chatflow_user',
   THEME: 'chatflow_theme',
+  NICKNAME: 'user_nickname',
+  AVATAR: 'user_avatar',
 } as const;
 
 export const MESSAGE_TYPES = {
