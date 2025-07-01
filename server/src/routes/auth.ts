@@ -2,20 +2,13 @@ import express from 'express';
 import passport from 'passport';
 import { authenticateToken } from '../middleware/auth';
 import {
-  register,
-  login,
   logout,
   getProfile,
-  googleCallback
+  googleCallback,
+  updateProfile
 } from '../controllers/authController';
 
 const router = express.Router();
-
-// Regular authentication routes
-router.post('/register', register);
-router.post('/login', login);
-router.post('/logout', authenticateToken, logout);
-router.get('/profile', authenticateToken, getProfile);
 
 // Google OAuth routes
 router.get('/google',
@@ -26,5 +19,14 @@ router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   googleCallback
 );
+
+// Profile route (for verifying tokens)
+router.get('/profile', authenticateToken as any, getProfile as any);
+
+// Update profile route
+router.put('/profile', authenticateToken as any, updateProfile as any);
+
+// Logout route
+router.post('/logout', authenticateToken as any, logout as any);
 
 export default router;

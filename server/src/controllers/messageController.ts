@@ -89,7 +89,7 @@ export const editMessage = async (req: AuthRequest, res: Response) => {
     }
 
     // Check if user is the sender
-    if (message.sender.toString() !== req.user?._id.toString()) {
+    if ((message.sender as any).toString() !== (req.user?._id as any).toString()) {
       return res.status(403).json({ message: 'You can only edit your own messages' });
     }
 
@@ -127,7 +127,7 @@ export const deleteMessage = async (req: AuthRequest, res: Response) => {
     }
 
     // Check if user is the sender
-    if (message.sender.toString() !== req.user?._id.toString()) {
+    if ((message.sender as any).toString() !== (req.user?._id as any).toString()) {
       return res.status(403).json({ message: 'You can only delete your own messages' });
     }
 

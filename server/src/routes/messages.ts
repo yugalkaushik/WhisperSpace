@@ -10,12 +10,12 @@ import {
 const router = express.Router();
 
 // All message routes require authentication
-router.use(authenticateToken);
+router.use(authenticateToken as any);
 
 // Message CRUD operations
-router.get('/', getMessages);
-router.post('/', sendMessage);
-router.put('/:messageId', editMessage);
-router.delete('/:messageId', deleteMessage);
+router.get('/', getMessages as any);
+router.post('/', sendMessage as any);
+router.put('/:messageId', editMessage as any);
+router.delete('/:messageId', deleteMessage as any);
 
 export default router;

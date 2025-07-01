@@ -1,9 +1,12 @@
+// Load environment variables FIRST
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import cors from 'cors';
 import session from 'express-session';
-import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 
 // Import configurations
@@ -13,13 +16,14 @@ import passport from './config/passport';
 // Import routes
 import authRoutes from './routes/auth';
 import messageRoutes from './routes/messages';
+import roomRoutes from './routes/rooms';
 
 // Import models
 import { User } from './models/User';
 import { Message } from './models/Message';
 
-// Load environment variables
-dotenv.config();
+// Import services
+import { roomCleanupService } from './services/roomCleanup';
 
 const app = express();
 const server = createServer(app);
@@ -63,6 +67,31 @@ app.use(passport.session());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/rooms', roomRoutes);
+
+// Admin endpoints for room cleanup
+app.get('/api/admin/cleanup/stats', async (req, res) => {
+  try {
+    const stats = await roomCleanupService.getCleanupStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Error getting cleanup stats:', error);
+    res.status(500).json({ error: 'Failed to get cleanup stats' });
+  }
+});
+
+app.post('/api/admin/cleanup/manual', async (req, res) => {
+  try {
+    const result = await roomCleanupService.manualCleanup();
+    res.json({
+      message: 'Manual cleanup completed',
+      ...result
+    });
+  } catch (error) {
+    console.error('Error in manual cleanup:', error);
+    res.status(500).json({ error: 'Failed to perform manual cleanup' });
+  }
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -73,32 +102,68 @@ app.get('/api/health', (req, res) => {
 interface AuthenticatedSocket extends Socket {
   userId?: string;
   username?: string;
+  nickname?: string;
+  selectedAvatar?: string;
 }
 
 io.use(async (socket: any, next) => {
   try {
     const token = socket.handshake.auth.token;
+    const nickname = socket.handshake.auth.nickname;
+    const selectedAvatar = socket.handshake.auth.selectedAvatar;
+    
     if (!token) {
       return next(new Error('Authentication error'));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-    const user = await User.findById(decoded.userId);
+    // Try to verify the token and get user from database
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+      const user = await User.findById(decoded.userId);
 
-    if (!user) {
-      return next(new Error('User not found'));
+      if (user) {
+        socket.userId = (user._id as any).toString();
+        socket.username = user.username;
+        // Use localStorage profile data if available, otherwise fallback to database
+        socket.nickname = nickname || user.nickname || user.username;
+        socket.selectedAvatar = selectedAvatar || user.selectedAvatar || 'avatar1';
+        socket.userAvatar = user.avatar || '';
+      } else {
+        // If user not found in DB, create identity from token and localStorage
+        socket.userId = decoded.userId;
+        socket.username = `User_${decoded.userId.slice(-6)}`;
+        socket.nickname = nickname || socket.username;
+        socket.selectedAvatar = selectedAvatar || 'avatar1';
+        socket.userAvatar = '';
+      }
+    } catch (jwtError) {
+      // If token verification fails, still allow connection with localStorage data
+      console.log('JWT verification failed, using localStorage data:', jwtError);
+      const tempId = Date.now().toString();
+      socket.userId = tempId;
+      socket.username = `Guest_${tempId.slice(-6)}`;
+      socket.nickname = nickname || socket.username;
+      socket.selectedAvatar = selectedAvatar || 'avatar1';
+      socket.userAvatar = '';
     }
 
-    socket.userId = user._id.toString();
-    socket.username = user.username;
+    console.log(`Socket auth successful: ${socket.nickname} (${socket.userId})`);
     next();
   } catch (error) {
+    console.error('Socket authentication error:', error);
     next(new Error('Authentication error'));
   }
 });
 
-// Online users tracking
-const onlineUsers = new Map<string, { socketId: string; username: string; userId: string }>();
+// Online users tracking with room support
+const onlineUsers = new Map<string, { 
+  socketId: string; 
+  username: string; 
+  userId: string; 
+  nickname?: string;
+  selectedAvatar?: string;
+  rooms: Set<string>; 
+}>();
 
 io.on('connection', async (socket: any) => {
   console.log(`User connected: ${socket.username} (${socket.id})`);
@@ -107,7 +172,10 @@ io.on('connection', async (socket: any) => {
   onlineUsers.set(socket.userId, {
     socketId: socket.id,
     username: socket.username,
-    userId: socket.userId
+    userId: socket.userId,
+    nickname: socket.nickname,
+    selectedAvatar: socket.selectedAvatar,
+    rooms: new Set(['general'])
   });
 
   // Update user status in database
@@ -119,19 +187,42 @@ io.on('connection', async (socket: any) => {
   // Join general room by default
   socket.join('general');
 
-  // Broadcast updated online users list
-  io.emit('users_online', Array.from(onlineUsers.values()));
+  // Broadcast updated online users list to general room
+  const generalUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has('general'));
+  io.to('general').emit('users_online', generalUsers);
 
   // Handle joining rooms
   socket.on('join_room', (room: string) => {
     socket.join(room);
+    
+    // Update user's room list
+    const user = onlineUsers.get(socket.userId);
+    if (user) {
+      user.rooms.add(room);
+    }
+    
     socket.emit('joined_room', room);
+    
+    // Emit room-specific online users
+    const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(room));
+    io.to(room).emit('users_online', roomUsers);
   });
 
   // Handle leaving rooms
   socket.on('leave_room', (room: string) => {
     socket.leave(room);
+    
+    // Update user's room list
+    const user = onlineUsers.get(socket.userId);
+    if (user) {
+      user.rooms.delete(room);
+    }
+    
     socket.emit('left_room', room);
+    
+    // Emit updated online users for the room
+    const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(room));
+    io.to(room).emit('users_online', roomUsers);
   });
 
   // Handle sending messages
@@ -148,18 +239,23 @@ io.on('connection', async (socket: any) => {
         return;
       }
 
-      // Create and save message
-      const message = new Message({
+      // Create message object (without saving to database)
+      const message = {
+        _id: Date.now().toString(), // Simple ID for real-time purposes
         content: content.trim(),
-        sender: socket.userId,
+        sender: {
+          _id: socket.userId,
+          username: socket.username,
+          avatar: socket.userAvatar || '',
+          isOnline: true
+        },
         room,
-        messageType
-      });
+        messageType,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      await message.save();
-      await message.populate('sender', 'username avatar isOnline');
-
-      // Emit message to all users in the room
+      // Emit message to all users in the room (no database save)
       io.to(room).emit('new_message', message);
 
     } catch (error) {
@@ -198,7 +294,7 @@ io.on('connection', async (socket: any) => {
         return;
       }
 
-      if (message.sender.toString() !== socket.userId) {
+      if ((message.sender as any).toString() !== socket.userId) {
         socket.emit('error', { message: 'You can only edit your own messages' });
         return;
       }
@@ -240,7 +336,7 @@ io.on('connection', async (socket: any) => {
         return;
       }
 
-      if (message.sender.toString() !== socket.userId) {
+      if ((message.sender as any).toString() !== socket.userId) {
         socket.emit('error', { message: 'You can only delete your own messages' });
         return;
       }
@@ -260,6 +356,10 @@ io.on('connection', async (socket: any) => {
   socket.on('disconnect', async () => {
     console.log(`User disconnected: ${socket.username} (${socket.id})`);
 
+    // Get user's rooms before removing
+    const user = onlineUsers.get(socket.userId);
+    const userRooms = user?.rooms || new Set();
+
     // Remove from online users
     onlineUsers.delete(socket.userId);
 
@@ -269,8 +369,11 @@ io.on('connection', async (socket: any) => {
       lastSeen: new Date()
     });
 
-    // Broadcast updated online users list
-    io.emit('users_online', Array.from(onlineUsers.values()));
+    // Broadcast updated online users list to all rooms the user was in
+    userRooms.forEach(room => {
+      const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(room));
+      io.to(room).emit('users_online', roomUsers);
+    });
   });
 });
 
@@ -279,4 +382,26 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 ChatFlow server running on port ${PORT}`);
   console.log(`📡 Socket.IO server ready for connections`);
+  
+  // Start the room cleanup service
+  roomCleanupService.start();
+});
+
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully...');
+  roomCleanupService.stop();
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received. Shutting down gracefully...');
+  roomCleanupService.stop();
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
 });

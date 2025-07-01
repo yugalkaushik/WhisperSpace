@@ -41,7 +41,7 @@ export const register = async (req: Request, res: Response) => {
     await user.save();
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken((user._id as any).toString());
 
     res.status(201).json({
       message: 'User registered successfully',
@@ -87,7 +87,7 @@ export const login = async (req: Request, res: Response) => {
     await user.save();
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken((user._id as any).toString());
 
     res.json({
       message: 'Login successful',
@@ -129,10 +129,12 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
     res.json({
       user: {
-        id: req.user._id,
+        _id: req.user._id,
         username: req.user.username,
         email: req.user.email,
         avatar: req.user.avatar,
+        nickname: req.user.nickname,
+        selectedAvatar: req.user.selectedAvatar,
         isOnline: req.user.isOnline,
         lastSeen: req.user.lastSeen
       }
@@ -157,12 +159,73 @@ export const googleCallback = async (req: Request, res: Response) => {
     await user.save();
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id.toString());
     
     // Redirect to frontend with token
     res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
   } catch (error) {
     console.error('Google callback error:', error);
     res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
+  }
+};
+
+export const updateProfile = async (req: AuthRequest, res: Response) => {
+  try {
+    const { nickname, selectedAvatar } = req.body;
+    const currentUser = req.user;
+
+    if (!currentUser) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const userId = (currentUser._id as any).toString();
+
+    // Validation
+    if (!nickname || typeof nickname !== 'string') {
+      return res.status(400).json({ message: 'Nickname is required' });
+    }
+
+    if (nickname.trim().length < 2) {
+      return res.status(400).json({ message: 'Nickname must be at least 2 characters long' });
+    }
+
+    if (nickname.trim().length > 30) {
+      return res.status(400).json({ message: 'Nickname must be less than 30 characters' });
+    }
+
+    if (!selectedAvatar || typeof selectedAvatar !== 'string') {
+      return res.status(400).json({ message: 'Avatar selection is required' });
+    }
+
+    // Update user profile
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        nickname: nickname.trim(),
+        selectedAvatar
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        nickname: updatedUser.nickname,
+        selectedAvatar: updatedUser.selectedAvatar,
+        avatar: updatedUser.avatar,
+        isOnline: updatedUser.isOnline,
+        lastSeen: updatedUser.lastSeen
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
