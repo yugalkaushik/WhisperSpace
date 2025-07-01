@@ -1,0 +1,24 @@
+# Root-level ignores
+.env
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
+
+# Server (Backend) ignores
+server/node_modules/
+server/.env
+server/dist/
+server/build/
+
+# Client (Frontend) ignores
+client/node_modules/
+client/.env
+client/dist/
+client/build/
+
+# IDE and OS-specific files
+.vscode/
+*.swp
+Thumbs.db
