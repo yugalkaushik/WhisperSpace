@@ -17,7 +17,10 @@ const GoogleAuthButton = () => {
       
       localStorage.setItem('auth_attempt_time', Date.now().toString());
       
-      window.location.href = `${API_BASE_URL}/auth/google`;
+      const authUrl = `${API_BASE_URL}/auth/google`;
+      console.log('Redirecting to Google OAuth URL:', authUrl);
+      
+      window.location.href = authUrl;
     } catch (error) {
       console.error('Google OAuth redirect failed:', error);
       setIsLoading(false);
