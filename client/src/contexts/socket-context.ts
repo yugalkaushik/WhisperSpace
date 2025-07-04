@@ -9,8 +9,6 @@ export const SocketContext = createContext<SocketContextType>({
   typingUsers: [],
   currentRoom: null,
   sendMessage: () => {},
-  editMessage: () => {},
-  deleteMessage: () => {},
   joinRoom: () => {},
   leaveRoom: () => {},
   startTyping: () => {},

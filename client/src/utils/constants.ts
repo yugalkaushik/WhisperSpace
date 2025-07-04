@@ -1,12 +1,10 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001';
 
 export const STORAGE_KEYS = {
   TOKEN: 'chatflow_token',
   USER: 'chatflow_user',
   THEME: 'chatflow_theme',
-  NICKNAME: 'user_nickname',
-  AVATAR: 'user_avatar',
 } as const;
 
 export const MESSAGE_TYPES = {

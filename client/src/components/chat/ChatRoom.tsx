@@ -1,9 +1,9 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Copy, Check } from 'lucide-react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import UserList from './UserList';
-import ThemeToggle from '../ui/ThemeToggle';
 import UserProfileDropdown from '../profile/UserProfileDropdown';
 import { AuthContext } from '../../contexts/auth-context';
 import { SocketContext } from '../../contexts/socket-context';
@@ -14,6 +14,19 @@ const ChatRoom = () => {
   const { token } = useContext(AuthContext);
   const { messages, currentRoom, leaveRoom } = useContext(SocketContext);
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyRoomCode = async () => {
+    if (currentRoom?.code) {
+      try {
+        await navigator.clipboard.writeText(currentRoom.code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (error) {
+        console.error('Failed to copy room code:', error);
+      }
+    }
+  };
 
   const handleLeaveRoom = async () => {
     if (currentRoom && token) {
@@ -41,34 +54,46 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
-      <header className="p-4 bg-blue-600 text-white flex justify-between items-center">
+    <div className="h-screen flex flex-col bg-zinc-900">
+      <header className="py-4 px-6 bg-zinc-900 text-white flex justify-between items-center border-b border-zinc-800/50">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-semibold">WhisperSpace</h1>
+          <h1 className="text-xl font-semibold text-white font-sf-pro">WhisperSpace</h1>
           {currentRoom && (
-            <>
-              <span className="text-sm opacity-75">•</span>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{currentRoom.name}</span>
-                <span className="text-xs opacity-75">Room: {currentRoom.code}</span>
+            <div className="flex items-center space-x-3 text-sm">
+              <span className="text-zinc-400">•</span>
+              <span className="text-white font-medium">{currentRoom.name}</span>
+              <div className="flex items-center space-x-1">
+                <span className="text-zinc-300 font-mono text-sm">{currentRoom.code}</span>
+                <button
+                  onClick={handleCopyRoomCode}
+                  className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                  title="Copy room code"
+                >
+                  {copied ? (
+                    <Check size={14} className="text-green-400" />
+                  ) : (
+                    <Copy size={14} />
+                  )}
+                </button>
               </div>
-            </>
+            </div>
           )}
         </div>
-        <div className="flex items-center space-x-4">
-          <ThemeToggle />
+        <div className="flex items-center space-x-3">
           <button
             onClick={handleLeaveRoom}
-            className="text-white hover:text-gray-200 text-sm px-3 py-1 rounded border border-white/20 hover:bg-white/10 transition-colors"
+            className="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-sm text-white 
+                      transition-colors font-medium"
           >
             Leave Room
           </button>
-          <UserProfileDropdown variant="dark" />
+          <UserProfileDropdown />
         </div>
       </header>
-      <div className="flex flex-1 overflow-hidden">
-        <UserList />
-        <div className="flex-1 flex flex-col">
+      
+      <div className="flex flex-1 min-h-0">
+        <UserList roomData={currentRoom} isMobileView={false} />
+        <div className="flex-1 flex flex-col min-h-0">
           <MessageList messages={messages} />
           <MessageInput />
         </div>

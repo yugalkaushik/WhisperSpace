@@ -1,1 +1,56 @@
 @import "tailwindcss";
+@import "./styles/typography.css";
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  background: linear-gradient(to right bottom, #ffffff, #f9f9ff);
+  font-family: 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.dark body {
+  background: linear-gradient(to right bottom, #0f172a, #111827);
+}
+
+/* Base transitions for all interactive elements */
+button, a, input, textarea, select {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Utility classes */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* Decorative page background */
+.page-bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Modern focus styles */
+*:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.6);
+  outline-offset: 2px;
+  transition: outline-offset 0.15s ease;
+}
+
+/* Responsive design improvements */
+@media screen and (max-width: 768px) {
+  .mobile-hidden {
+    display: none;
+  }
+  
+  /* Improve touch target sizes on mobile */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

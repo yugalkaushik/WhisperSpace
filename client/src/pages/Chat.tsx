@@ -4,7 +4,7 @@ import { AuthContext } from '../contexts/auth-context';
 import { SocketContext } from '../contexts/socket-context';
 import ChatRoom from '../components/chat/ChatRoom';
 import { useSocket } from '../hooks/useSocket';
-import { useRoomMessages } from '../hooks/useRoomMessages';
+
 import type { Room } from '../types';
 
 const Chat = () => {
@@ -21,17 +21,38 @@ const Chat = () => {
       return;
     }
     
-    // If no room data is provided, redirect to room manager
-    if (!location.state?.roomCode || !location.state?.roomName) {
-      navigate('/rooms');
-      return;
+    // Get room info from state or URL
+    let roomCode = location.state?.roomCode;
+    let roomName = location.state?.roomName;
+    
+    // If we don't have room data from state, try to get it from URL or localStorage
+    if (!roomCode || !roomName) {
+      // Try localStorage first
+      try {
+        const stored = localStorage.getItem('currentRoom');
+        if (stored) {
+          const parsedRoom = JSON.parse(stored);
+          roomCode = parsedRoom.code;
+          roomName = parsedRoom.name;
+          console.log('Retrieved room data from localStorage:', parsedRoom);
+        }
+      } catch {
+        console.log('Error getting room from localStorage');
+      }
+      
+      // If still no room data, redirect to room manager
+      if (!roomCode || !roomName) {
+        navigate('/rooms');
+        return;
+      }
     }
 
+    // Create room object and update context
     const room: Room = {
-      _id: location.state.roomId || '',
-      name: location.state.roomName,
-      code: location.state.roomCode,
-      pin: location.state.pin || '',
+      _id: location.state?.roomId || '',
+      name: roomName,
+      code: roomCode,
+      pin: location.state?.pin || '',
       members: [],
       createdBy: user,
       isActive: true,
@@ -39,22 +60,26 @@ const Chat = () => {
       updatedAt: new Date()
     };
 
+    // Set room data in state and context
     setRoomData(room);
     setCurrentRoom?.(room);
+    
+    // Store room info in localStorage for components that need it
+    localStorage.setItem('currentRoom', JSON.stringify({
+      name: room.name,
+      code: room.code
+    }));
   }, [user, navigate, location.state, setCurrentRoom]);
 
   // Initialize socket with room code
   useSocket(roomData?.code);
-  
-  // Load messages for the current room
-  useRoomMessages(roomData?.code);
 
   if (!roomData) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div className="h-screen flex items-center justify-center bg-zinc-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading room...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-6 text-indigo-300 font-sf-pro-text text-lg">Loading room...</p>
         </div>
       </div>
     );

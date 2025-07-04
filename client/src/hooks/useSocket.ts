@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import io from 'socket.io-client';
 import { AuthContext } from '../contexts/auth-context';
 import { SocketContext } from '../contexts/socket-context';
+import { SOCKET_URL } from '../utils/constants';
 import type { Message, OnlineUser } from '../types';
 
 export const useSocket = (roomCode?: string) => {
@@ -11,37 +12,16 @@ export const useSocket = (roomCode?: string) => {
 
   useEffect(() => {
     if (user && token) {
-      // Parse token properly (same as API service)
-      let parsedToken = token;
-      if (typeof token === 'string') {
-        try {
-          parsedToken = JSON.parse(token);
-        } catch {
-          parsedToken = token;
-        }
-      }
-      
-      const socket = io(import.meta.env.VITE_SOCKET_URL, {
-        auth: { 
-          token: parsedToken,
-          nickname: localStorage.getItem('user_nickname') || undefined,
-          selectedAvatar: localStorage.getItem('user_avatar') || undefined,
-        },
-        transports: ["polling", "websocket"],
-        withCredentials: true,
-        upgrade: true,
-        rememberUpgrade: false,
-      });
-
-      // Suppress connection error logs
-      socket.on('connect_error', () => {
-        // Silently handle connection errors to avoid console spam
-        // The connection will automatically retry with polling
+      const socket = io(SOCKET_URL, {
+        auth: { token },
       });
 
       socket.on('connect', () => {
         setSocket?.(socket);
         setSocketInstance(socket);
+        
+        // Clear messages to start fresh (ephemeral messages only)
+        setMessages?.([]);
         
         // Join the specific room if provided, otherwise join general
         const roomToJoin = roomCode || 'general';
@@ -56,16 +36,6 @@ export const useSocket = (roomCode?: string) => {
         setMessages?.((prev) => [...prev, message]);
       });
 
-      socket.on('message_edited', (message: Message) => {
-        setMessages?.((prev) =>
-          prev.map((m) => (m._id === message._id ? message : m))
-        );
-      });
-
-      socket.on('message_deleted', (data: { messageId: string }) => {
-        setMessages?.((prev) => prev.filter((m) => m._id !== data.messageId));
-      });
-
       socket.on('user_typing', (data: { username: string; userId: string }) => {
         setTypingUsers?.((prev) => [...prev.filter((u) => u.userId !== data.userId), data]);
       });
@@ -74,17 +44,19 @@ export const useSocket = (roomCode?: string) => {
         setTypingUsers?.((prev) => prev.filter((u) => u.userId !== data.userId));
       });
 
-      socket.on('joined_room', (room: string) => {
-        console.log(`Joined room: ${room}`);
+      socket.on('joined_room', () => {
+        // Joined room
         // Clear messages when joining a new room
         setMessages?.([]);
       });
 
-      socket.on('left_room', (room: string) => {
-        console.log(`Left room: ${room}`);
+      socket.on('left_room', () => {
         // Clear messages and current room when leaving
         setMessages?.([]);
         setCurrentRoom?.(null);
+        
+        // Clear room data from localStorage
+        localStorage.removeItem('currentRoom');
       });
 
       socket.on('error', (error: { message: string }) => {
@@ -92,10 +64,20 @@ export const useSocket = (roomCode?: string) => {
       });
 
       return () => {
+        // Cleanup socket connection
+        socket.off('connect');
+        socket.off('users_online');
+        socket.off('new_message');
+        socket.off('user_typing');
+        socket.off('user_stop_typing');
+        socket.off('left_room');
+        socket.off('error');
         socket.disconnect();
         setSocketInstance(null);
         setSocket?.(null);
         setCurrentRoom?.(null);
+        // Clean up localStorage
+        localStorage.removeItem('currentRoom');
       };
     }
   }, [user, token, roomCode, setSocket, setOnlineUsers, setMessages, setTypingUsers, setCurrentRoom]);

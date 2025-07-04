@@ -5,12 +5,15 @@ export interface User {
   username: string;
   email: string;
   avatar?: string;
-  nickname?: string; // Display name chosen by user
-  selectedAvatar?: string; // Avatar ID chosen by user
   googleId?: string;
   isOnline: boolean;
   lastSeen: Date;
   token?: string; // For client-side auth state
+}
+
+export interface UserProfile {
+  nickname: string; // Display name chosen by user (stored in localStorage)
+  selectedAvatar: string; // Avatar ID chosen by user (stored in localStorage)
 }
 
 export interface Room {
@@ -42,30 +45,12 @@ export interface OnlineUser {
   socketId: string;
   username: string;
   userId: string;
-  nickname?: string;
-  selectedAvatar?: string;
 }
 
 export interface AuthResponse {
   message: string;
   token: string;
   user: User;
-}
-
-export interface MessageResponse {
-  message: string;
-  data: Message;
-}
-
-export interface MessagesResponse {
-  messages: Message[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalMessages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
 }
 
 export interface ApiError {
@@ -97,8 +82,6 @@ export interface SocketContextType {
   typingUsers: TypingUser[];
   currentRoom: Room | null;
   sendMessage: (content: string, room?: string) => void;
-  editMessage: (messageId: string, content: string, room?: string) => void;
-  deleteMessage: (messageId: string, room?: string) => void;
   joinRoom: (room: string) => void;
   leaveRoom: (room: string) => void;
   startTyping: (room?: string) => void;

@@ -1,49 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { User } from '../types';
 import { useLocalStorage } from './useLocalStorage';
-import { STORAGE_KEYS } from '../utils/constants';
+import { useProfile } from './useProfile';
 
 export const useAuth = () => {
   const [user, setUser] = useLocalStorage<User | null>('chatflow_user', null);
   const [token, setToken] = useLocalStorage<string | null>('chatflow_token', null);
+  const { resetProfile } = useProfile();
   const [error, setError] = useState<string | null>(null);
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Set user and token (used by AuthCallback after Google OAuth)
+  useEffect(() => {
+    const storedToken = localStorage.getItem('chatflow_token');
+    const storedUserData = localStorage.getItem('chatflow_user');
+    
+    if ((storedToken && !storedUserData) || (!storedToken && storedUserData)) {
+      localStorage.removeItem('chatflow_token');
+      localStorage.removeItem('chatflow_user');
+      setUser(null);
+      setToken(null);
+    }
+  }, [token, setToken, setUser]);
+
   const setAuthData = (userData: User, authToken: string) => {
-    // Load nickname and avatar from localStorage if they exist
-    const savedNickname = localStorage.getItem(STORAGE_KEYS.NICKNAME);
-    const savedAvatar = localStorage.getItem(STORAGE_KEYS.AVATAR);
+    localStorage.setItem('chatflow_token', authToken);
+    localStorage.setItem('chatflow_user', JSON.stringify(userData));
     
-    const enhancedUser = {
-      ...userData,
-      nickname: savedNickname || userData.nickname || userData.username,
-      selectedAvatar: savedAvatar || userData.selectedAvatar || 'avatar1'
-    };
-    
-    setUser(enhancedUser);
     setToken(authToken);
+    setUser(userData);
     setError(null);
   };
 
-  // Placeholder functions for compatibility (OAuth flow handles actual auth)
   const login = async () => {
-    // OAuth login is handled by redirecting to Google
     setError('Please use Google Sign-In');
   };
 
   const register = async () => {
-    // OAuth registration is handled by redirecting to Google  
     setError('Please use Google Sign-In');
   };
 
   const logout = () => {
+    setLoading(true);
+    
+    localStorage.removeItem('chatflow_token');
+    localStorage.removeItem('chatflow_user');
+    localStorage.removeItem('currentRoom');
+    localStorage.removeItem('auth_attempt_time');
+    
     setUser(null);
     setToken(null);
+    resetProfile();
     setError(null);
-    // Clear profile data from localStorage
-    localStorage.removeItem(STORAGE_KEYS.NICKNAME);
-    localStorage.removeItem(STORAGE_KEYS.AVATAR);
+    setLoading(false);
   };
 
   return { 

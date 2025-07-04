@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AVATAR_OPTIONS, getAvatarUrl } from '../../utils/avatars';
-import Button from '../ui/Button';
+import { Button } from '../ui/Button';
 import Input from '../ui/Input';
 
 interface UserProfileSetupProps {
@@ -12,25 +12,23 @@ interface UserProfileSetupProps {
   };
   onSave: (data: { nickname: string; selectedAvatar: string }) => void;
   isLoading?: boolean;
-  externalError?: string;
-  isEditing?: boolean;
 }
 
 export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
   currentUser,
   onSave,
-  isLoading = false,
-  externalError,
-  isEditing = false
+  isLoading = false
 }) => {
   const [nickname, setNickname] = useState(currentUser.nickname || currentUser.username || '');
   const [selectedAvatar, setSelectedAvatar] = useState(currentUser.selectedAvatar || 'avatar1');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
+    // Form submit
     e.preventDefault();
     setError('');
 
+    // Form validation
     if (!nickname.trim()) {
       setError('Please enter a nickname');
       return;
@@ -45,7 +43,6 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
       setError('Nickname must be less than 30 characters');
       return;
     }
-
     onSave({
       nickname: nickname.trim(),
       selectedAvatar
@@ -53,27 +50,31 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 w-full max-w-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      {/* Subtle gradient background overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-black opacity-80"></div>
+      
+      {/* Blurred circles for depth */}
+      <div className="absolute top-1/4 -left-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 -right-24 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
+      
+      {/* Glass card with Apple-style transparency */}
+      <div className="relative z-10 backdrop-blur-xl bg-black/30 p-8 rounded-3xl shadow-2xl w-full max-w-2xl border border-white/10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {isEditing ? 'Edit Your Profile' : 'Complete Your Profile'}
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Complete Your Profile
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {isEditing 
-              ? 'Update your nickname and avatar' 
-              : 'Choose a nickname and avatar to personalize your WhisperSpace experience'
-            }
+          <p className="text-gray-300/80">
+            Choose a nickname and avatar to personalize your WhisperSpace experience
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Nickname Section */}
           <div>
-            <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Display Nickname
-            </label>
             <Input
+              id="nickname"
+              label="Display Nickname"
               type="text"
               value={nickname}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
@@ -88,27 +89,30 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
 
           {/* Avatar Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+            <label className="block text-sm font-medium text-white mb-4">
               Choose Your Avatar
             </label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 p-4 bg-black/40 backdrop-blur-md rounded-xl shadow-inner border border-white/5">
               {AVATAR_OPTIONS.map((avatar) => (
                 <button
                   key={avatar.id}
                   type="button"
                   onClick={() => setSelectedAvatar(avatar.id)}
-                  className={`relative p-2 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
+                  className={`relative p-2 rounded-xl transition-all duration-200 ${
                     selectedAvatar === avatar.id
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-lg'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-400'
+                      ? 'bg-white/10 border border-white/20 shadow-lg scale-105'
+                      : 'border border-white/5 hover:border-white/15 hover:bg-white/5 hover:scale-105'
                   }`}
                   title={avatar.name}
                 >
-                  <img
-                    src={avatar.url}
-                    alt={avatar.name}
-                    className="w-16 h-16 rounded-full mx-auto"
-                  />
+                  <div className="w-16 h-16 rounded-full mx-auto shadow-xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20 overflow-hidden">
+                    <img
+                      src={getAvatarUrl(avatar.id)}
+                      alt={avatar.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
                   {selectedAvatar === avatar.id && (
                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -125,28 +129,31 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
           </div>
 
           {/* Preview */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Preview</h3>
+          <div className="backdrop-blur-md bg-white/10 rounded-xl p-4 border border-white/10">
+            <h3 className="text-sm font-medium text-white mb-3">Preview</h3>
             <div className="flex items-center space-x-3">
-              <img
-                src={getAvatarUrl(selectedAvatar)}
-                alt="Selected avatar"
-                className="w-12 h-12 rounded-full"
-              />
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 shadow-xl transition-all duration-300">
+                <img
+                  src={getAvatarUrl(selectedAvatar, nickname)}
+                  alt="Selected avatar"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">
+                <p className="font-medium text-white">
                   {nickname || 'Your Nickname'}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-indigo-300/80">
                   {currentUser.email}
                 </p>
               </div>
             </div>
           </div>
 
-          {(error || externalError) && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
-              {error || externalError}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm backdrop-blur-md">
+              {error}
             </div>
           )}
 
@@ -154,14 +161,11 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
             <Button
               type="submit"
               disabled={isLoading || !nickname.trim()}
-              className="flex-1"
+              className="w-full py-3 text-base backdrop-blur-md bg-white/10 hover:bg-white/15 
+                       border border-white/10 text-white transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-indigo-500/20"
+              onClick={handleSubmit}
             >
-              {isLoading 
-                ? 'Saving...' 
-                : isEditing 
-                  ? 'Save Changes' 
-                  : 'Continue to WhisperSpace'
-              }
+              {isLoading ? 'Saving...' : 'Continue to WhisperSpace'}
             </Button>
           </div>
         </form>

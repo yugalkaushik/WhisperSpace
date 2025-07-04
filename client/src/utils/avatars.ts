@@ -1,73 +1,102 @@
-// Avatar options - using high-quality cartoon avatars
+// DiceBear Thumbs avatar configuration
 export const AVATAR_OPTIONS = [
   {
     id: 'avatar1',
-    name: 'Space Explorer',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Sky Blue',
+    color: '69d2e7',
+    seed: 'whale'
   },
   {
     id: 'avatar2',
-    name: 'Cosmic Wanderer',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Coral',
+    color: 'ff9e9d',
+    seed: 'sunset'
   },
   {
     id: 'avatar3',
-    name: 'Digital Nomad',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Luna&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Mint',
+    color: 'a7dbd8',
+    seed: 'spring'
   },
   {
     id: 'avatar4',
-    name: 'Code Ninja',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Max&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Ruby',
+    color: 'e84a5f',
+    seed: 'ruby'
   },
   {
     id: 'avatar5',
-    name: 'Tech Wizard',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Zoe&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Lavender',
+    color: 'b6a4cc',
+    seed: 'mystery'
   },
   {
     id: 'avatar6',
-    name: 'Pixel Pioneer',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sam&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Forest',
+    color: '4caf50',
+    seed: 'forest'
   },
   {
     id: 'avatar7',
-    name: 'Chat Master',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Sunny',
+    color: 'ffd34e',
+    seed: 'sunny'
   },
   {
     id: 'avatar8',
-    name: 'Data Explorer',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Maya&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Ocean',
+    color: '3498db',
+    seed: 'ocean'
   },
   {
     id: 'avatar9',
-    name: 'Cloud Surfer',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=River&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Berry',
+    color: 'ee4035',
+    seed: 'berry'
   },
   {
     id: 'avatar10',
-    name: 'Byte Bender',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sky&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Coffee',
+    color: '795548',
+    seed: 'coffee'
   },
   {
     id: 'avatar11',
-    name: 'Signal Sender',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Ocean&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Emerald',
+    color: '2ecc71',
+    seed: 'emerald'
   },
   {
     id: 'avatar12',
-    name: 'Network Navigator',
-    url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Storm&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&style=circle'
+    name: 'Royal',
+    color: '5e50a1',
+    seed: 'royal'
   }
 ] as const;
 
 export type AvatarId = typeof AVATAR_OPTIONS[number]['id'];
 
-// Helper function to get avatar URL by ID
-export const getAvatarUrl = (avatarId: string): string => {
+// Helper function to get avatar color by ID
+export const getAvatarColor = (avatarId: string): string => {
+  if (!avatarId) return AVATAR_OPTIONS[0].color;
   const avatar = AVATAR_OPTIONS.find(a => a.id === avatarId);
-  return avatar?.url || AVATAR_OPTIONS[0].url; // Fallback to first avatar
+  return avatar?.color || AVATAR_OPTIONS[0].color; // Fallback to first avatar
+};
+
+// Helper function to get avatar seed by ID
+export const getAvatarSeed = (avatarId: string): string => {
+  if (!avatarId) return AVATAR_OPTIONS[0].seed;
+  const avatar = AVATAR_OPTIONS.find(a => a.id === avatarId);
+  return avatar?.seed || AVATAR_OPTIONS[0].seed; // Fallback to first avatar
+};
+
+// Helper function to get DiceBear Thumbs avatar URL
+export const getAvatarUrl = (avatarId: string, username: string = ''): string => {
+  const color = getAvatarColor(avatarId);
+  const seed = getAvatarSeed(avatarId) || username || 'avatar';
+  
+  // Generate URL for DiceBear Thumbs avatar
+  return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${color}&rotate=5`;
 };
 
 // Helper function to get avatar name by ID

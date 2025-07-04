@@ -17,22 +17,14 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     socket?.emit('send_message', { content, room: roomToUse });
   };
 
-  const editMessage = (messageId: string, content: string, room?: string) => {
-    const roomToUse = room || currentRoom?.code || 'general';
-    socket?.emit('edit_message', { messageId, content, room: roomToUse });
-  };
-
-  const deleteMessage = (messageId: string, room?: string) => {
-    const roomToUse = room || currentRoom?.code || 'general';
-    socket?.emit('delete_message', { messageId, room: roomToUse });
-  };
+  // Removed edit and delete message functions (messages are now ephemeral)
 
   const joinRoom = (room: string) => {
     socket?.emit('join_room', room);
   };
 
   const leaveRoom = (room: string) => {
-    console.log('Emitting leave_room for:', room);
+    // Emitting leave_room event
     socket?.emit('leave_room', room);
     // Clear current room if it's the one being left
     if (currentRoom?.code === room) {
@@ -60,8 +52,6 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         typingUsers,
         currentRoom,
         sendMessage,
-        editMessage,
-        deleteMessage,
         joinRoom,
         leaveRoom,
         startTyping,

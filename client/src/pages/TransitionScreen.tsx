@@ -29,6 +29,12 @@ const TransitionScreen = () => {
 
     // Navigate to chat after 4 seconds total
     const navigateTimer = setTimeout(() => {
+      // Store the room info in localStorage before navigating
+      localStorage.setItem('currentRoom', JSON.stringify({
+        name: state?.roomName,
+        code: state?.roomCode
+      }));
+      
       navigate('/chat', { 
         state: { 
           roomCode: state?.roomCode,

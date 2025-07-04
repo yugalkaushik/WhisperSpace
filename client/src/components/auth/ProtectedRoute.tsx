@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/auth-context';
+import { useProfile } from '../../hooks/useProfile';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,9 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireProfileSetup = true 
 }) => {
   const { user, loading } = useContext(AuthContext);
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const isEditing = searchParams.get('edit') === 'true';
+  const { profile } = useProfile();
 
   // Show loading while auth state is being determined
   if (loading) {
@@ -33,15 +32,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace />;
   }
 
-  // Check if profile setup is required and user hasn't completed it
-  if (requireProfileSetup && (!user.nickname || !user.selectedAvatar)) {
+  // Only check profile setup requirement for routes that need it
+  if (requireProfileSetup && !profile.nickname) {
     return <Navigate to="/profile-setup" replace />;
-  }
-
-  // If user is on profile setup page but has already completed setup, redirect to rooms
-  // UNLESS they're explicitly editing their profile
-  if (!requireProfileSetup && user.nickname && user.selectedAvatar && !isEditing) {
-    return <Navigate to="/rooms" replace />;
   }
 
   return <>{children}</>;

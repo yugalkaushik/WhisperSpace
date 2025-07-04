@@ -5,25 +5,22 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   title: string;
-  showCloseButton?: boolean;
 }
 
-const Modal = ({ isOpen, onClose, children, title, showCloseButton = true }: ModalProps) => {
+const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">{title}</h2>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50">
+      <div className="bg-black p-8 rounded-3xl w-full max-w-md shadow-2xl">
+        <h2 className="text-2xl font-semibold mb-6 text-white font-sf-pro">{title}</h2>
         {children}
-        {showCloseButton && (
-          <button
-            className="mt-4 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-            onClick={onClose}
-          >
-            Close
-          </button>
-        )}
+        <button
+          className="mt-6 px-4 py-2 rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 font-medium font-sf-pro-text shadow-md"
+          onClick={onClose}
+        >
+          Close
+        </button>
       </div>
     </div>
   );

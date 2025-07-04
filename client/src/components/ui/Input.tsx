@@ -9,20 +9,49 @@ interface InputProps {
   className?: string;
   maxLength?: number;
   readOnly?: boolean;
+  id?: string;
+  label?: string;
+  error?: string;
 }
 
-const Input = ({ type, value, onChange, onKeyDown, placeholder, className, maxLength, readOnly }: InputProps) => {
+const Input = ({ 
+  type, 
+  value, 
+  onChange, 
+  onKeyDown, 
+  placeholder, 
+  className, 
+  maxLength, 
+  readOnly, 
+  id,
+  label,
+  error
+}: InputProps) => {
   return (
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      onKeyDown={onKeyDown}
-      placeholder={placeholder}
-      maxLength={maxLength}
-      readOnly={readOnly}
-      className={`w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${readOnly ? 'cursor-default bg-gray-50 dark:bg-gray-700' : ''} ${className || ''}`}
-    />
+    <div className="w-full">
+      {label && (
+        <label 
+          htmlFor={id} 
+          className="block text-sm font-medium text-gray-300 font-sf-pro mb-1"
+        >
+          {label}
+        </label>
+      )}
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        readOnly={readOnly}
+        className={`w-full px-4 py-2 rounded-xl bg-zinc-800 text-white shadow-md shadow-black/20 transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/40 focus:border-transparent hover:border-transparent placeholder-indigo-300/60 font-sf-pro-text ${readOnly ? 'cursor-default bg-zinc-900' : ''} ${className || ''}`}
+      />
+      {error && (
+        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+      )}
+    </div>
   );
 };
 
