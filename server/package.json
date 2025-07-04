@@ -10,10 +10,17 @@
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "build": "tsc",
-    "vercel-build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/express-session": "^1.18.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.0.8",
+    "@types/passport": "^1.0.17",
+    "@types/passport-google-oauth20": "^2.0.16",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
@@ -27,14 +34,6 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/express-session": "^1.18.2",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.0.8",
-    "@types/passport": "^1.0.17",
-    "@types/passport-google-oauth20": "^2.0.16",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2"
   }
