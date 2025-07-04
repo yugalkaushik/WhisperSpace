@@ -1,7 +1,6 @@
 export const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://whisperspace-backend.onrender.com') + '/api';
 export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://whisperspace-backend.onrender.com';
 
-// Debug logging in development
 if (import.meta.env.DEV) {
   console.log('🔧 Frontend Config:', {
     API_BASE_URL,
