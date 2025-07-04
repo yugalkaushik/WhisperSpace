@@ -42,7 +42,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4">
       {/* Subtle gradient background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-black opacity-80"></div>
       
@@ -51,20 +51,20 @@ const Login = () => {
       <div className="absolute bottom-1/4 -right-24 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
       
       {/* Glass card with Apple-style transparency */}
-      <div className={`relative z-10 backdrop-blur-xl bg-black/30 p-10 rounded-3xl shadow-2xl w-11/12 max-w-md 
+      <div className={`relative z-10 backdrop-blur-xl bg-black/30 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-md 
                      border border-white/10 transition-all duration-700 ease-out transform 
                      ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
         <div className="text-center">
-          <h1 className="text-5xl font-bold mb-3 text-white font-montserrat tracking-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-white font-montserrat tracking-tight">
             WhisperSpace
           </h1>
           
-          <p className="text-gray-300/80 mb-8 font-light">
+          <p className="text-gray-300/80 mb-6 md:mb-8 font-light text-sm md:text-base">
             Connect and chat with people around the world
           </p>
           
           {authError && (
-            <div className="bg-red-500/20 text-red-200 px-4 py-3 rounded-xl mb-8 backdrop-blur-md border border-red-500/20">
+            <div className="bg-red-500/20 text-red-200 px-4 py-3 rounded-xl mb-6 md:mb-8 backdrop-blur-md border border-red-500/20 text-sm">
               {getErrorMessage(authError)}
             </div>
           )}

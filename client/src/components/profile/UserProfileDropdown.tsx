@@ -28,10 +28,20 @@ const UserProfileDropdown: React.FC = () => {
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 8,
-        right: window.innerWidth - rect.right + window.scrollX,
-      });
+      const isMobile = window.innerWidth < 768;
+      
+      if (isMobile) {
+        // On mobile, position dropdown from the top right corner
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 8,
+          right: window.innerWidth - rect.right + window.scrollX,
+        });
+      } else {
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 8,
+          right: window.innerWidth - rect.right + window.scrollX,
+        });
+      }
     }
   };
 
@@ -82,13 +92,13 @@ const UserProfileDropdown: React.FC = () => {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 
+        className="flex items-center space-x-1 md:space-x-2 p-1.5 md:p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 
                   transition-all duration-200 text-white shadow-lg 
                   border border-zinc-700 hover:border-zinc-600"
         aria-label="User menu"
       >
         <div className="relative">
-          <div className="w-8 h-8 rounded-full overflow-hidden">
+          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full overflow-hidden">
             <img 
               src={getAvatarUrl(profile.selectedAvatar || `avatar${displayName.charCodeAt(0) % 12 + 1}`, displayName)}
               alt={displayName}
@@ -96,7 +106,7 @@ const UserProfileDropdown: React.FC = () => {
               loading="lazy"
             />
           </div>
-          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full ring-1 ring-zinc-800"></div>
+          <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 md:w-3 md:h-3 bg-green-500 rounded-full ring-1 ring-zinc-800"></div>
         </div>
         <div className="hidden md:block text-left">
           <p className="text-sm font-medium text-white truncate max-w-[100px]">
@@ -107,7 +117,7 @@ const UserProfileDropdown: React.FC = () => {
           </p>
         </div>
         <svg
-          className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-3 h-3 md:w-4 md:h-4 text-zinc-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -119,16 +129,16 @@ const UserProfileDropdown: React.FC = () => {
       {isOpen && createPortal(
         <div 
           ref={dropdownRef}
-          className="fixed bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-700 w-64"
+          className="fixed bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-700 w-56 md:w-64"
           style={{ 
             top: dropdownPosition.top,
             right: dropdownPosition.right,
             zIndex: 999999 
           }}
         >
-          <div className="p-4 border-b border-zinc-700">
+          <div className="p-3 md:p-4 border-b border-zinc-700">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden">
                 <img 
                   src={getAvatarUrl(profile.selectedAvatar || `avatar${displayName.charCodeAt(0) % 12 + 1}`, displayName)}
                   alt={displayName}
@@ -150,12 +160,12 @@ const UserProfileDropdown: React.FC = () => {
             <button
               onClick={handleEditProfile}
               onMouseDown={(e) => e.preventDefault()}
-              className="w-full flex items-center space-x-3 px-3 py-3 text-left 
+              className="w-full flex items-center space-x-3 px-3 py-2.5 md:py-3 text-left 
                         text-white bg-zinc-800 hover:bg-zinc-700 
                         rounded-xl transition-colors duration-200
-                        border border-zinc-700 hover:border-zinc-600"
+                        border border-zinc-700 hover:border-zinc-600 text-sm"
             >
-              <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               <span className="text-sm font-medium">Edit Profile</span>
@@ -164,12 +174,12 @@ const UserProfileDropdown: React.FC = () => {
             <button
               onClick={handleLogout}
               onMouseDown={(e) => e.preventDefault()}
-              className="w-full flex items-center space-x-3 px-3 py-3 text-left mt-1
+              className="w-full flex items-center space-x-3 px-3 py-2.5 md:py-3 text-left mt-1
                         text-red-200 bg-red-900/50 hover:bg-red-800/60 
                         rounded-xl transition-colors duration-200
-                        border border-red-800/50 hover:border-red-700"
+                        border border-red-800/50 hover:border-red-700 text-sm"
             >
-              <svg className="w-5 h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="text-sm font-medium">Sign Out</span>

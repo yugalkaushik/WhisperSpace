@@ -48,9 +48,60 @@ button, a, input, textarea, select {
     display: none;
   }
   
+  /* Reduce font sizes on mobile */
+  html {
+    font-size: 14px;
+  }
+  
   /* Improve touch target sizes on mobile */
   button, a {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Mobile-specific spacing */
+  .mobile-compact {
+    padding: 0.5rem;
+  }
+  
+  /* Mobile sidebar styles */
+  .mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .mobile-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+  
+  /* Better touch scrolling */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .no-touch-hover:hover {
+    background-color: initial;
+    transform: initial;
+  }
+  
+  /* Mobile-friendly form inputs */
+  input, textarea {
+    font-size: 16px; /* Prevent zoom on iOS */
   }
 }

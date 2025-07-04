@@ -56,11 +56,11 @@ const MessageInput = () => {
   }, [typingTimeout, stopTyping]);
 
   return (
-    <div className="p-4 bg-zinc-900 border-t border-zinc-800/50">
-      <div className="flex items-center space-x-3">
+    <div className="p-3 md:p-4 bg-zinc-900 border-t border-zinc-800/50">
+      <div className="flex items-center space-x-2 md:space-x-3">
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="p-2 text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-md transition-colors"
+          className="p-2 text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-md transition-colors flex-shrink-0"
           aria-label="Emoji picker"
           title="Insert emoji (Ctrl+E)"
         >
@@ -79,20 +79,20 @@ const MessageInput = () => {
             }
           }}
           placeholder="Type a message..."
-          className="flex-1 bg-zinc-800 text-white placeholder-zinc-400 border-0 rounded-md py-2.5 focus:ring-1 focus:ring-indigo-500"
+          className="flex-1 bg-zinc-800 text-white placeholder-zinc-400 border-0 rounded-md py-2 md:py-2.5 text-sm md:text-base focus:ring-1 focus:ring-indigo-500"
         />
         <Button 
           onClick={handleSend} 
           disabled={!message.trim()} 
-          className="px-4 py-2.5 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-700 disabled:text-zinc-400 
-                    text-white font-medium transition-colors"
+          className="px-3 py-2 md:px-4 md:py-2.5 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-700 disabled:text-zinc-400 
+                    text-white font-medium transition-colors text-sm md:text-base flex-shrink-0"
           variant="primary"
         >
           Send
         </Button>
       </div>
       {showEmojiPicker && (
-        <div className="absolute bottom-20 left-4 z-50 rounded-lg overflow-hidden shadow-xl">
+        <div className="absolute bottom-16 md:bottom-20 left-3 md:left-4 z-50 rounded-lg overflow-hidden shadow-xl">
           <EmojiPicker onEmojiClick={handleEmojiSelect} />
         </div>
       )}

@@ -8,9 +8,11 @@ import type { OnlineUser, Room } from '../../types';
 interface UserListProps {
   roomData?: Room | null;
   isMobileView?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-const UserList = ({ roomData }: UserListProps) => {
+const UserList = ({ roomData, isMobileView = false, isOpen = false, onClose }: UserListProps) => {
   const { onlineUsers, currentRoom } = useContext(SocketContext);
   const { user } = useContext(AuthContext);
   const { profile } = useProfile();
@@ -53,32 +55,39 @@ const UserList = ({ roomData }: UserListProps) => {
   };
 
   return (
-    <div className="w-64 bg-zinc-900 border-r border-zinc-800/50 flex flex-col">
+    <div className={`
+      ${isMobileView 
+        ? `mobile-sidebar w-64 bg-zinc-900 ${isOpen ? 'open' : ''}`
+        : 'w-48 md:w-64 bg-zinc-900'
+      } 
+      border-r border-zinc-800/50 flex flex-col
+    `}>
       {/* Room Info */}
-      <div className="p-4 border-b border-zinc-800/50">
+      <div className="p-3 md:p-4 border-b border-zinc-800/50">
         {roomInfo ? (
           <div>
-            <h2 className="text-lg font-semibold text-white font-sf-pro">{roomInfo.name}</h2>
-            <span className="text-sm text-zinc-300 font-mono">{roomInfo.code}</span>
+            <h2 className="text-base md:text-lg font-semibold text-white font-sf-pro truncate">{roomInfo.name}</h2>
+            <span className="text-xs md:text-sm text-zinc-300 font-mono">{roomInfo.code}</span>
           </div>
         ) : (
           <div className="animate-pulse">
-            <div className="h-5 bg-zinc-800 rounded w-3/4 mb-2"></div>
+            <div className="h-4 md:h-5 bg-zinc-800 rounded w-3/4 mb-2"></div>
             <div className="h-3 bg-zinc-800 rounded w-1/2"></div>
           </div>
         )}
       </div>
       
       {/* User List */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        <h3 className="text-sm font-medium text-zinc-400 mb-3 uppercase tracking-wide">
+      <div className="flex-1 p-3 md:p-4 overflow-y-auto">
+        <h3 className="text-xs md:text-sm font-medium text-zinc-400 mb-3 uppercase tracking-wide">
           Online ({onlineUsers.length})
         </h3>
-        <div className="space-y-2">
+        <div className="space-y-1 md:space-y-2">
           {onlineUsers.map((onlineUser) => (
             <div 
               key={onlineUser.userId} 
-              className="flex items-center space-x-3 p-2 rounded-md hover:bg-zinc-800/50 transition-colors"
+              className="flex items-center space-x-2 md:space-x-3 p-2 rounded-md hover:bg-zinc-800/50 transition-colors"
+              onClick={isMobileView ? onClose : undefined}
             >
               <Avatar 
                 username={onlineUser.username} 
