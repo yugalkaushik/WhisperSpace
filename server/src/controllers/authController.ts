@@ -20,14 +20,12 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
-    });
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(400).json({ 
-        message: existingUser.email === email ? 'Email already registered' : 'Username already taken'
+        message: 'Email already registered'
       });
     }
 
@@ -133,8 +131,6 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
         username: req.user.username,
         email: req.user.email,
         avatar: req.user.avatar,
-        nickname: req.user.nickname,
-        selectedAvatar: req.user.selectedAvatar,
         isOnline: req.user.isOnline,
         lastSeen: req.user.lastSeen
       }
@@ -171,57 +167,29 @@ export const googleCallback = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const { nickname, selectedAvatar } = req.body;
-    const currentUser = req.user;
+    const userId = req.user?._id;
 
-    if (!currentUser) {
+    if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const userId = (currentUser._id as any).toString();
+    // Profile updates (nickname, avatar) are now handled on frontend with localStorage
+    // This endpoint just returns the current user data
+    const user = await User.findById(userId);
 
-    // Validation
-    if (!nickname || typeof nickname !== 'string') {
-      return res.status(400).json({ message: 'Nickname is required' });
-    }
-
-    if (nickname.trim().length < 2) {
-      return res.status(400).json({ message: 'Nickname must be at least 2 characters long' });
-    }
-
-    if (nickname.trim().length > 30) {
-      return res.status(400).json({ message: 'Nickname must be less than 30 characters' });
-    }
-
-    if (!selectedAvatar || typeof selectedAvatar !== 'string') {
-      return res.status(400).json({ message: 'Avatar selection is required' });
-    }
-
-    // Update user profile
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        nickname: nickname.trim(),
-        selectedAvatar
-      },
-      { new: true }
-    );
-
-    if (!updatedUser) {
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
     res.json({
       message: 'Profile updated successfully',
       user: {
-        _id: updatedUser._id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        nickname: updatedUser.nickname,
-        selectedAvatar: updatedUser.selectedAvatar,
-        avatar: updatedUser.avatar,
-        isOnline: updatedUser.isOnline,
-        lastSeen: updatedUser.lastSeen
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        isOnline: user.isOnline,
+        lastSeen: user.lastSeen
       }
     });
   } catch (error) {

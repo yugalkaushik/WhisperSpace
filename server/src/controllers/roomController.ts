@@ -5,16 +5,11 @@ import bcrypt from 'bcryptjs';
 export const createRoom = async (req: Request, res: Response) => {
   try {
     const { name, pin } = req.body;
-    const user = (req as any).user;
+    const userId = (req as any).user?.id;
 
-    console.log('Create room request:', { name, pin, userId: user?._id });
-
-    if (!user) {
+    if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
-    const userId = user._id.toString();
-    console.log('User ID for room creation:', userId);
 
     if (!name || !pin) {
       return res.status(400).json({ message: 'Room name and PIN are required' });
@@ -47,9 +42,7 @@ export const createRoom = async (req: Request, res: Response) => {
       members: [userId]
     });
 
-    console.log('About to save room:', { name, code: roomCode, creator: userId, members: [userId] });
     await room.save();
-    console.log('Room saved successfully:', room._id);
 
     res.status(201).json({
       message: 'Room created successfully',
@@ -65,13 +58,11 @@ export const createRoom = async (req: Request, res: Response) => {
 export const joinRoom = async (req: Request, res: Response) => {
   try {
     const { roomCode, pin } = req.body;
-    const user = (req as any).user;
+    const userId = (req as any).user?.id;
 
-    if (!user) {
+    if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
-    const userId = user._id.toString();
 
     if (!roomCode || !pin) {
       return res.status(400).json({ message: 'Room code and PIN are required' });
@@ -113,13 +104,11 @@ export const joinRoom = async (req: Request, res: Response) => {
 export const getRoomInfo = async (req: Request, res: Response) => {
   try {
     const { roomCode } = req.params;
-    const user = (req as any).user;
+    const userId = (req as any).user?.id;
 
-    if (!user) {
+    if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
-    const userId = user._id.toString();
 
     const room = await Room.findOne({ code: roomCode.toUpperCase(), isActive: true })
       .populate('creator', 'username')
@@ -151,13 +140,11 @@ export const getRoomInfo = async (req: Request, res: Response) => {
 export const leaveRoom = async (req: Request, res: Response) => {
   try {
     const { roomCode } = req.params;
-    const user = (req as any).user;
+    const userId = (req as any).user?.id;
 
-    if (!user) {
+    if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
-    const userId = user._id.toString();
 
     const room = await Room.findOne({ code: roomCode.toUpperCase(), isActive: true });
     if (!room) {

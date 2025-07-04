@@ -1,5 +1,4 @@
 import { Room } from '../models/Room';
-import { Message } from '../models/Message';
 
 export class RoomCleanupService {
   private cleanupInterval: NodeJS.Timeout | null = null;
@@ -11,7 +10,7 @@ export class RoomCleanupService {
    */
   start(): void {
     if (this.cleanupInterval) {
-      console.log('Room cleanup service is already running');
+      // Room cleanup service already running
       return;
     }
 
@@ -54,7 +53,7 @@ export class RoomCleanupService {
       });
 
       if (roomsToDelete.length === 0) {
-        console.log('🧹 Room cleanup: No rooms to delete');
+        // No rooms to delete
         return;
       }
 
@@ -62,13 +61,10 @@ export class RoomCleanupService {
 
       for (const room of roomsToDelete) {
         try {
-          // Delete all messages in the room
-          const deletedMessages = await Message.deleteMany({ room: room._id });
-          
-          // Delete the room
+          // Delete the room (messages are ephemeral, no need to delete them)
           await Room.findByIdAndDelete(room._id);
 
-          console.log(`🗑️  Deleted room "${room.name}" (${room.code}) - was empty since ${room.emptyAt}, deleted ${deletedMessages.deletedCount} messages`);
+          console.log(`🗑️  Deleted room "${room.name}" (${room.code}) - was empty since ${room.emptyAt}`);
         } catch (error) {
           console.error(`❌ Failed to delete room ${room.code}:`, error);
         }
@@ -102,7 +98,7 @@ export class RoomCleanupService {
 
       for (const room of roomsToDelete) {
         try {
-          await Message.deleteMany({ room: room._id });
+          // Messages are ephemeral, no need to delete them
           await Room.findByIdAndDelete(room._id);
           result.deletedRooms++;
           console.log(`🗑️  Manually deleted room "${room.name}" (${room.code})`);

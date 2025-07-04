@@ -16,27 +16,30 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   }
 
   try {
+    // First verify the token without database lookup to catch expired/invalid tokens
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     
-    let user = await User.findById(decoded.userId).select('-password');
+    if (!decoded || !decoded.userId) {
+      res.status(401).json({ message: 'Invalid token format' });
+      return;
+    }
+    
+    // Now check if the user exists
+    const user = await User.findById(decoded.userId).select('-password');
 
     if (!user) {
-      // For Google OAuth users, create a basic user entry if it doesn't exist
-      user = new User({
-        _id: decoded.userId,
-        username: 'Google User',
-        email: 'temp@example.com',
-        googleId: 'google_' + decoded.userId,
-        nickname: 'Google User',
-        selectedAvatar: 'avatar1'
-      });
-      await user.save();
+      // Token is valid but user doesn't exist in the database
+      res.status(401).json({ message: 'User account not found. Please login again.' });
+      return;
     }
 
     req.user = user;
     next();
   } catch (error) {
-    console.error('Token verification failed');
-    res.status(403).json({ message: 'Invalid or expired token' });
+    if ((error as Error).name === 'TokenExpiredError') {
+      res.status(401).json({ message: 'Authentication expired. Please login again.' });
+    } else {
+      res.status(403).json({ message: 'Invalid authentication token' });
+    }
   }
 };

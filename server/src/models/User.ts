@@ -6,8 +6,6 @@ export interface IUser extends Document {
   email: string;
   password?: string;
   avatar?: string;
-  nickname?: string; // Display name chosen by user
-  selectedAvatar?: string; // Avatar ID chosen by user
   googleId?: string;
   isOnline: boolean;
   lastSeen: Date;
@@ -19,7 +17,6 @@ const userSchema = new Schema<IUser>({
   username: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
     minlength: 2,
     maxlength: 30
@@ -38,15 +35,6 @@ const userSchema = new Schema<IUser>({
   avatar: {
     type: String,
     default: ''
-  },
-  nickname: {
-    type: String,
-    trim: true,
-    maxlength: 30
-  },
-  selectedAvatar: {
-    type: String,
-    default: 'avatar1' // Default avatar ID
   },
   googleId: {
     type: String,

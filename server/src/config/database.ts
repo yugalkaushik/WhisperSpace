@@ -10,6 +10,26 @@ const connectDB = async (): Promise<void> => {
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     
+    // Fix username index issue
+    try {
+      const db = conn.connection.db;
+      if (db) {
+        const collection = db.collection('users');
+        
+        // Try to drop the unique username index if it exists
+        try {
+          await collection.dropIndex('username_1');
+          console.log('✅ Removed unique constraint from username field');
+        } catch (indexError: any) {
+          if (indexError.codeName !== 'IndexNotFound') {
+            console.log('ℹ️ Username index management:', indexError.message);
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Index management completed');
+    }
+    
     // Handle connection events
     mongoose.connection.on('error', (err) => {
       console.error('MongoDB connection error:', err);
