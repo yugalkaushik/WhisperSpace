@@ -8,14 +8,14 @@ async function testServer() {
     console.log('Server response status:', response.status);
     
     if (response.status === 302) {
-      console.log('✅ Server is running and Google Auth endpoint is working (redirect)');
+      console.log('Server is running and Google Auth endpoint is working (redirect)');
       console.log('Redirect location:', response.headers.get('location'));
     } else {
-      console.log('❌ Server response:', response.status, response.statusText);
+      console.log('Server response:', response.status, response.statusText);
     }
   } catch (error) {
-    console.log('❌ Server is NOT running or accessible:', error.message);
-    console.log('\n💡 To start the server:');
+    console.log('Server is NOT running or accessible:', error.message);
+    console.log('\n To start the server:');
     console.log('   cd server');
     console.log('   npm run dev');
   }
