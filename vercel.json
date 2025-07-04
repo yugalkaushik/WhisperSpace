@@ -3,7 +3,7 @@
   "outputDirectory": "client/dist",
   "functions": {
     "api/index.ts": {
-      "runtime": "@vercel/node@3.0.7"
+      "runtime": "@vercel/node@2.15.10"
     }
   },
   "rewrites": [
@@ -15,8 +15,5 @@
       "source": "/(.*)",
       "destination": "/client/dist/$1"
     }
-  ],
-  "engines": {
-    "node": "18.x"
-  }
+  ]
 }
