@@ -3,12 +3,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
 import cors from 'cors';
 import session from 'express-session';
-import jwt from 'jsonwebtoken';
-import { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Import configurations
 import connectDB from '../src/config/database';
@@ -17,9 +13,6 @@ import passport from '../src/config/passport';
 // Import routes
 import authRoutes from '../src/routes/auth';
 import roomRoutes from '../src/routes/rooms';
-
-// Import models
-import { User } from '../src/models/User';
 
 const app = express();
 
@@ -59,7 +52,5 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'WhisperSpace server is running' });
 });
 
-// Catch all handler for Vercel
-export default (req: VercelRequest, res: VercelResponse) => {
-  return app(req, res);
-};
+// Export the Express API
+export default app;

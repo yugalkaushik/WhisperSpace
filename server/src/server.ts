@@ -7,6 +7,7 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import cors from 'cors';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import jwt from 'jsonwebtoken';
 
 // Import configurations
@@ -54,6 +55,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-session-secret',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/whisperspace',
+    touchAfter: 24 * 3600 // lazy session update
+  }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
