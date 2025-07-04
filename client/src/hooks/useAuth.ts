@@ -46,6 +46,7 @@ export const useAuth = () => {
     localStorage.removeItem('chatflow_user');
     localStorage.removeItem('currentRoom');
     localStorage.removeItem('auth_attempt_time');
+    sessionStorage.removeItem('roomManagerRefreshed');
     
     setUser(null);
     setToken(null);
