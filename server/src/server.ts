@@ -274,45 +274,32 @@ io.on('connection', async (socket: any) => {
   });
 });
 
-// Graceful shutdown handlers - only for local development
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 3001;
+// Start the server
+const PORT = process.env.PORT || 3001;
+
+server.listen(PORT, () => {
+  console.log(`🚀 ChatFlow server running on port ${PORT}`);
+  console.log(`📡 Socket.IO server ready for connections`);
   
-  server.listen(PORT, () => {
-    console.log(`🚀 ChatFlow server running on port ${PORT}`);
-    console.log(`📡 Socket.IO server ready for connections`);
-    
-    // Start the room cleanup service
-    roomCleanupService.start();
-  });
-}
+  // Start the room cleanup service
+  roomCleanupService.start();
+});
 
-// Graceful shutdown handlers - only for local development
-if (process.env.NODE_ENV !== 'production') {
-  process.on('SIGTERM', () => {
-    console.log('SIGTERM received. Shutting down gracefully...');
-    roomCleanupService.stop();
-    server.close(() => {
-      console.log('Server closed.');
-      process.exit(0);
-    });
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully...');
+  roomCleanupService.stop();
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
   });
+});
 
-  process.on('SIGINT', () => {
-    console.log('SIGINT received. Shutting down gracefully...');
-    roomCleanupService.stop();
-    server.close(() => {
-      console.log('Server closed.');
-      process.exit(0);
-    });
+process.on('SIGINT', () => {
+  console.log('SIGINT received. Shutting down gracefully...');
+  roomCleanupService.stop();
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
   });
-
-  // Start server for local development
-  const PORT = process.env.PORT || 3001;
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
-
-// Export the Express app for Vercel
-export default app;
+});
