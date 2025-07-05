@@ -56,7 +56,7 @@ const TransitionScreen = () => {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center overflow-hidden" style={{ height: '100dvh' }}>
       <div className="text-center p-6 max-w-sm mx-auto">
         
         {/* Main Animation Container */}

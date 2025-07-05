@@ -170,7 +170,7 @@ const RoomManager = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-black overflow-hidden">
+    <div className="h-screen w-screen bg-black overflow-hidden" style={{ height: '100dvh' }}>
       {/* Subtle gradient background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-indigo-900/10 to-black opacity-80"></div>
       

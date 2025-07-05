@@ -9,27 +9,29 @@ import EmojiPicker from 'emoji-picker-react';
 const MessageInput = () => {
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const { socket, startTyping, stopTyping } = useContext(SocketContext);
+  const { socket, startTyping, stopTyping, currentRoom } = useContext(SocketContext);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleSend = () => {
-    if (message.trim()) {
+    if (message.trim() && currentRoom?.code) {
       socket?.emit('send_message', {
         content: message,
-        room: 'general',
+        room: currentRoom.code,
         messageType: message.length === 1 && /[\uD800-\uDFFF]/.test(message) ? MESSAGE_TYPES.EMOJI : MESSAGE_TYPES.TEXT,
       });
       setMessage('');
-      stopTyping('general');
+      stopTyping(currentRoom.code);
       if (typingTimeout) clearTimeout(typingTimeout);
     }
   };
 
   const handleTyping = () => {
-    startTyping('general');
-    if (typingTimeout) clearTimeout(typingTimeout);
-    const timeout = setTimeout(() => stopTyping('general'), TYPING_TIMEOUT);
-    setTypingTimeout(timeout);
+    if (currentRoom?.code) {
+      startTyping(currentRoom.code);
+      if (typingTimeout) clearTimeout(typingTimeout);
+      const timeout = setTimeout(() => stopTyping(currentRoom.code), TYPING_TIMEOUT);
+      setTypingTimeout(timeout);
+    }
   };
 
   const handleEmojiSelect = (emojiData: { emoji: string }) => {

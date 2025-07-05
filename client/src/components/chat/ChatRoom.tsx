@@ -68,7 +68,7 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-zinc-900 overflow-hidden">
+    <div className="h-screen flex flex-col bg-zinc-900 overflow-hidden" style={{ height: '100dvh' }}>
       {/* Mobile overlay */}
       {isMobile && isMobileMenuOpen && (
         <div 

@@ -13,8 +13,16 @@ const ProfileSetupPage: React.FC = () => {
   // Effect to handle navigation after profile update
   useEffect(() => {
     if (shouldNavigate && profile.nickname) {
+      // Auto-refresh after 3 seconds
+      const refreshTimer = setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+      
+      // Navigate immediately
       navigate('/rooms');
       setShouldNavigate(false);
+      
+      return () => clearTimeout(refreshTimer);
     }
   }, [shouldNavigate, profile.nickname, navigate]);
 

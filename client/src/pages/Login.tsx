@@ -42,7 +42,7 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-black px-4 overflow-hidden">
+    <div className="h-screen w-screen flex items-center justify-center bg-black px-4 overflow-hidden" style={{ height: '100dvh' }}>
       {/* Subtle gradient background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-black opacity-80"></div>
       

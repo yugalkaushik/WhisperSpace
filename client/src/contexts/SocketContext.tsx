@@ -13,8 +13,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
 
   const sendMessage = (content: string, room?: string) => {
-    const roomToUse = room || currentRoom?.code || 'general';
-    socket?.emit('send_message', { content, room: roomToUse });
+    const roomToUse = room || currentRoom?.code;
+    if (roomToUse) {
+      socket?.emit('send_message', { content, room: roomToUse });
+    }
   };
 
   // Removed edit and delete message functions (messages are now ephemeral)
@@ -33,13 +35,17 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const startTyping = (room?: string) => {
-    const roomToUse = room || currentRoom?.code || 'general';
-    socket?.emit('typing_start', { room: roomToUse });
+    const roomToUse = room || currentRoom?.code;
+    if (roomToUse) {
+      socket?.emit('typing_start', { room: roomToUse });
+    }
   };
 
   const stopTyping = (room?: string) => {
-    const roomToUse = room || currentRoom?.code || 'general';
-    socket?.emit('typing_stop', { room: roomToUse });
+    const roomToUse = room || currentRoom?.code;
+    if (roomToUse) {
+      socket?.emit('typing_stop', { room: roomToUse });
+    }
   };
 
   return (

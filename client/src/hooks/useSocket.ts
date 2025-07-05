@@ -23,9 +23,10 @@ export const useSocket = (roomCode?: string) => {
         // Clear messages to start fresh (ephemeral messages only)
         setMessages?.([]);
         
-        // Join the specific room if provided, otherwise join general
-        const roomToJoin = roomCode || 'general';
-        socket.emit('join_room', roomToJoin);
+        // Only join the specific room if provided
+        if (roomCode) {
+          socket.emit('join_room', roomCode);
+        }
       });
 
       socket.on('users_online', (users: OnlineUser[]) => {
