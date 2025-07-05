@@ -109,11 +109,27 @@ app.get('/', (req, res) => {
     message: 'WhisperSpace Backend Server is Running! 🚀',
     status: 'online',
     timestamp: new Date().toISOString(),
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      CLIENT_URL: process.env.CLIENT_URL,
+      PORT: process.env.PORT
+    },
     endpoints: {
       health: '/api/health',
       auth: '/api/auth/*',
       rooms: '/api/rooms/*'
     }
+  });
+});
+
+// Catch all unmatched routes for debugging
+app.get('*', (req, res) => {
+  console.log('Unmatched route:', req.path);
+  res.status(404).json({
+    error: 'Route not found',
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
   });
 });
 

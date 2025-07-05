@@ -145,12 +145,15 @@ export const googleCallback = async (req: Request, res: Response) => {
   try {
     console.log('Google callback triggered');
     console.log('req.user:', req.user);
+    console.log('CLIENT_URL:', process.env.CLIENT_URL);
     
     const user = req.user as any;
     
     if (!user) {
       console.log('No user found in callback');
-      return res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
+      const redirectUrl = `${process.env.CLIENT_URL}/login?error=auth_failed`;
+      console.log('Redirecting to (no user):', redirectUrl);
+      return res.redirect(redirectUrl);
     }
 
     console.log('User found:', user.email);
@@ -163,13 +166,16 @@ export const googleCallback = async (req: Request, res: Response) => {
     // Generate token
     const token = generateToken(user._id.toString());
     
-    console.log('Redirecting to:', `${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    const redirectUrl = `${process.env.CLIENT_URL}/auth/callback?token=${token}`;
+    console.log('Redirecting to (success):', redirectUrl);
     
     // Redirect to frontend with token
-    res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error('Google callback error:', error);
-    res.redirect(`${process.env.CLIENT_URL}/login?error=server_error`);
+    const redirectUrl = `${process.env.CLIENT_URL}/login?error=server_error`;
+    console.log('Redirecting to (error):', redirectUrl);
+    res.redirect(redirectUrl);
   }
 };
 
