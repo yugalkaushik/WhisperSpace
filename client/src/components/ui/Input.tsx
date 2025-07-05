@@ -46,7 +46,7 @@ const Input = ({
         placeholder={placeholder}
         maxLength={maxLength}
         readOnly={readOnly}
-        className={`w-full px-4 py-2 rounded-xl bg-zinc-800 text-white shadow-md shadow-black/20 transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/40 focus:border-transparent hover:border-transparent placeholder-indigo-300/60 font-sf-pro-text ${readOnly ? 'cursor-default bg-zinc-900' : ''} ${className || ''}`}
+        className={`w-full px-3 py-2 rounded-lg bg-zinc-800 text-white shadow-md shadow-black/20 transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/40 focus:border-transparent hover:border-transparent placeholder-indigo-300/60 font-sf-pro-text text-sm ${readOnly ? 'cursor-default bg-zinc-900' : ''} ${className || ''}`}
       />
       {error && (
         <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>

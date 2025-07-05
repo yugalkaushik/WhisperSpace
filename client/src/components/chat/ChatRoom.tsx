@@ -68,7 +68,7 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-zinc-900">
+    <div className="h-screen flex flex-col bg-zinc-900 overflow-hidden">
       {/* Mobile overlay */}
       {isMobile && isMobileMenuOpen && (
         <div 
@@ -77,42 +77,42 @@ const ChatRoom = () => {
         />
       )}
       
-      <header className="py-3 px-4 md:py-4 md:px-6 bg-zinc-900 text-white flex justify-between items-center border-b border-zinc-800/50">
-        <div className="flex items-center space-x-3 md:space-x-4">
+      <header className="py-2 px-3 md:py-3 md:px-4 bg-zinc-900 text-white flex justify-between items-center border-b border-zinc-800/50">
+        <div className="flex items-center space-x-2 md:space-x-3">
           {isMobile && (
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors md:hidden"
+              className="p-1.5 rounded-md hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors md:hidden"
             >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
           )}
-          <h1 className="text-lg md:text-xl font-semibold text-white font-sf-pro">WhisperSpace</h1>
+          <h1 className="text-base md:text-lg font-semibold text-white font-sf-pro">WhisperSpace</h1>
           {currentRoom && (
             <div className="flex items-center space-x-2 md:space-x-3 text-sm">
               <span className="text-zinc-400 hidden sm:inline">•</span>
-              <span className="text-white font-medium text-sm md:text-base truncate max-w-[120px] md:max-w-none">{currentRoom.name}</span>
+              <span className="text-white font-medium text-xs md:text-sm truncate max-w-[100px] md:max-w-none">{currentRoom.name}</span>
               <div className="flex items-center space-x-1">
-                <span className="text-zinc-300 font-mono text-xs md:text-sm">{currentRoom.code}</span>
+                <span className="text-zinc-300 font-mono text-xs">{currentRoom.code}</span>
                 <button
                   onClick={handleCopyRoomCode}
-                  className="p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                  className="p-0.5 rounded hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
                   title="Copy room code"
                 >
                   {copied ? (
-                    <Check size={12} className="text-green-400 md:w-3.5 md:h-3.5" />
+                    <Check size={10} className="text-green-400 md:w-3 md:h-3" />
                   ) : (
-                    <Copy size={12} className="md:w-3.5 md:h-3.5" />
+                    <Copy size={10} className="md:w-3 md:h-3" />
                   )}
                 </button>
               </div>
             </div>
           )}
         </div>
-        <div className="flex items-center space-x-2 md:space-x-3">
+        <div className="flex items-center space-x-1.5 md:space-x-2">
           <button
             onClick={handleLeaveRoom}
-            className="px-2 py-1 md:px-3 md:py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-xs md:text-sm text-white 
+            className="px-2 py-1 md:px-2.5 md:py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-xs text-white 
                       transition-colors font-medium"
           >
             Leave

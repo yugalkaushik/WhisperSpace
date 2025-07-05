@@ -4,16 +4,28 @@
 /* Base styles */
 html {
   scroll-behavior: smooth;
+  font-size: 14px; /* Smaller base font size */
+  overflow: hidden; /* Prevent scrolling */
 }
 
 body {
-  overflow-x: hidden;
+  overflow: hidden; /* Prevent scrolling */
+  height: 100vh;
+  width: 100vw;
   background: linear-gradient(to right bottom, #ffffff, #f9f9ff);
   font-family: 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 .dark body {
   background: linear-gradient(to right bottom, #0f172a, #111827);
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 /* Base transitions for all interactive elements */
@@ -44,24 +56,23 @@ button, a, input, textarea, select {
 
 /* Responsive design improvements */
 @media screen and (max-width: 768px) {
+  html {
+    font-size: 13px; /* Even smaller on mobile */
+  }
+  
   .mobile-hidden {
     display: none;
   }
   
-  /* Reduce font sizes on mobile */
-  html {
-    font-size: 14px;
-  }
-  
   /* Improve touch target sizes on mobile */
   button, a {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 40px;
+    min-width: 40px;
   }
   
   /* Mobile-specific spacing */
   .mobile-compact {
-    padding: 0.5rem;
+    padding: 0.25rem;
   }
   
   /* Mobile sidebar styles */
@@ -103,5 +114,11 @@ button, a, input, textarea, select {
   /* Mobile-friendly form inputs */
   input, textarea {
     font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+@media screen and (min-width: 769px) {
+  html {
+    font-size: 15px; /* Smaller desktop font size */
   }
 }

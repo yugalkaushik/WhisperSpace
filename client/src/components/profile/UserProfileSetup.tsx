@@ -50,26 +50,26 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+    <div className="h-screen flex items-center justify-center bg-black p-3 overflow-hidden">
       {/* Subtle gradient background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-black opacity-80"></div>
       
       {/* Blurred circles for depth */}
-      <div className="absolute top-1/4 -left-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 -right-24 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
+      <div className="absolute top-1/4 -left-24 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 -right-24 w-56 h-56 bg-indigo-600/20 rounded-full blur-3xl"></div>
       
       {/* Glass card with Apple-style transparency */}
-      <div className="relative z-10 backdrop-blur-xl bg-black/30 p-8 rounded-3xl shadow-2xl w-full max-w-2xl border border-white/10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+      <div className="relative z-10 backdrop-blur-xl bg-black/30 p-4 md:p-6 rounded-2xl shadow-2xl w-full max-w-md md:max-w-lg border border-white/10">
+        <div className="text-center mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-white mb-2">
             Complete Your Profile
           </h1>
-          <p className="text-gray-300/80">
+          <p className="text-sm text-gray-300/80">
             Choose a nickname and avatar to personalize your WhisperSpace experience
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
           {/* Nickname Section */}
           <div>
             <Input
@@ -89,23 +89,23 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
 
           {/* Avatar Selection */}
           <div>
-            <label className="block text-sm font-medium text-white mb-4">
+            <label className="block text-sm font-medium text-white mb-3">
               Choose Your Avatar
             </label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 p-4 bg-black/40 backdrop-blur-md rounded-xl shadow-inner border border-white/5">
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 md:gap-3 p-3 bg-black/40 backdrop-blur-md rounded-xl shadow-inner border border-white/5">
               {AVATAR_OPTIONS.map((avatar) => (
                 <button
                   key={avatar.id}
                   type="button"
                   onClick={() => setSelectedAvatar(avatar.id)}
-                  className={`relative p-2 rounded-xl transition-all duration-200 ${
+                  className={`relative p-1.5 rounded-xl transition-all duration-200 ${
                     selectedAvatar === avatar.id
                       ? 'bg-white/10 border border-white/20 shadow-lg scale-105'
                       : 'border border-white/5 hover:border-white/15 hover:bg-white/5 hover:scale-105'
                   }`}
                   title={avatar.name}
                 >
-                  <div className="w-16 h-16 rounded-full mx-auto shadow-xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20 overflow-hidden">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full mx-auto shadow-xl transition-all duration-300 transform hover:scale-110 ring-2 ring-black overflow-hidden">
                     <img
                       src={getAvatarUrl(avatar.id)}
                       alt={avatar.name}

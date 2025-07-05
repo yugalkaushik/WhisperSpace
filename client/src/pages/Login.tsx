@@ -42,29 +42,29 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+    <div className="h-screen w-screen flex items-center justify-center bg-black px-4 overflow-hidden">
       {/* Subtle gradient background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-black opacity-80"></div>
       
-      {/* Blurred circles for depth */}
-      <div className="absolute top-1/4 -left-24 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 -right-24 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
+      {/* Blurred circles for depth - smaller */}
+      <div className="absolute top-1/4 -left-16 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 -right-16 w-56 h-56 bg-indigo-600/20 rounded-full blur-3xl"></div>
       
-      {/* Glass card with Apple-style transparency */}
-      <div className={`relative z-10 backdrop-blur-xl bg-black/30 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-md 
+      {/* Glass card with Apple-style transparency - smaller */}
+      <div className={`relative z-10 backdrop-blur-xl bg-black/30 p-4 md:p-6 rounded-xl md:rounded-2xl shadow-2xl w-full max-w-sm 
                      border border-white/10 transition-all duration-700 ease-out transform 
                      ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
         <div className="text-center">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-white font-montserrat tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 text-white font-montserrat tracking-tight">
             WhisperSpace
           </h1>
           
-          <p className="text-gray-300/80 mb-6 md:mb-8 font-light text-sm md:text-base">
+          <p className="text-gray-300/80 mb-4 md:mb-6 font-light text-xs md:text-sm">
             Connect and chat with people around the world
           </p>
           
           {authError && (
-            <div className="bg-red-500/20 text-red-200 px-4 py-3 rounded-xl mb-6 md:mb-8 backdrop-blur-md border border-red-500/20 text-sm">
+            <div className="bg-red-500/20 text-red-200 px-3 py-2 rounded-lg mb-4 md:mb-6 backdrop-blur-md border border-red-500/20 text-xs">
               {getErrorMessage(authError)}
             </div>
           )}

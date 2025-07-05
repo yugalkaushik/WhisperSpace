@@ -56,24 +56,24 @@ const TransitionScreen = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-      <div className="text-center p-8 max-w-md mx-auto">
+    <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center overflow-hidden">
+      <div className="text-center p-6 max-w-sm mx-auto">
         
         {/* Main Animation Container */}
-        <div className="relative mb-8">
+        <div className="relative mb-6">
           {/* Animated Background Circle */}
-          <div className={`w-32 h-32 mx-auto rounded-full border-4 border-blue-200 dark:border-blue-800 transition-all duration-1000 ${
+          <div className={`w-24 h-24 md:w-28 md:h-28 mx-auto rounded-full border-4 border-blue-200 dark:border-blue-800 transition-all duration-1000 ${
             showSuccess ? 'scale-110 bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700' : 'bg-blue-100 dark:bg-blue-900'
           }`}>
             
             {/* Icon Container */}
             <div className="flex items-center justify-center h-full">
               {!showSuccess ? (
-                <Users className={`w-12 h-12 text-blue-600 dark:text-blue-400 transition-all duration-500 ${
+                <Users className={`w-8 h-8 md:w-10 md:h-10 text-blue-600 dark:text-blue-400 transition-all duration-500 ${
                   showSuccess ? 'scale-0' : 'scale-100'
                 }`} />
               ) : (
-                <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400 animate-bounce" />
+                <CheckCircle className="w-8 h-8 md:w-10 md:h-10 text-green-600 dark:text-green-400 animate-bounce" />
               )}
             </div>
           </div>

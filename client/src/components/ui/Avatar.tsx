@@ -8,18 +8,18 @@ interface AvatarProps {
 }
 
 const Avatar = ({ username, selectedAvatar, isOnline = false, size = 'md' }: AvatarProps) => {
-  // Size classes mapping
+  // Size classes mapping - made smaller
   const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-12 h-12',
-    lg: 'w-16 h-16',
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-12 h-12',
   };
 
   // Online indicator size classes
   const indicatorSizeClasses = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5',
+    sm: 'w-2 h-2',
+    md: 'w-3 h-3',
+    lg: 'w-4 h-4',
   };
 
   // Generate consistent avatar based on username if no selectedAvatar
@@ -44,7 +44,7 @@ const Avatar = ({ username, selectedAvatar, isOnline = false, size = 'md' }: Ava
     <div className="relative">
       <div 
         className={`${sizeClasses[size]} rounded-full overflow-hidden shadow-md shadow-black/20 
-                    transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/20`}
+                    ring-2 ring-black transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/20`}
       >
         <img 
           src={avatarUrl} 

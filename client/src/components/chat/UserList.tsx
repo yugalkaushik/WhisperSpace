@@ -78,11 +78,11 @@ const UserList = ({ roomData, isMobileView = false, isOpen = false, onClose }: U
       </div>
       
       {/* User List */}
-      <div className="flex-1 p-3 md:p-4 overflow-y-auto">
+      <div className="flex-1 p-3 md:p-4 overflow-hidden">
         <h3 className="text-xs md:text-sm font-medium text-zinc-400 mb-3 uppercase tracking-wide">
           Online ({onlineUsers.length})
         </h3>
-        <div className="space-y-1 md:space-y-2">
+        <div className="space-y-1 md:space-y-2 h-full overflow-y-auto">
           {onlineUsers.map((onlineUser) => (
             <div 
               key={onlineUser.userId} 

@@ -28,7 +28,7 @@ export function Button({
     }
   };
 
-  const baseClasses = "px-5 py-2.5 rounded-xl font-bold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 font-sf-pro shadow-md shadow-black/20";
+  const baseClasses = "px-3 py-2 md:px-4 md:py-2.5 rounded-lg font-bold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 font-sf-pro shadow-md shadow-black/20 text-sm";
   
   const variantClasses = {
     primary: "bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-lg hover:shadow-indigo-500/20 hover:transform hover:scale-[1.02]",

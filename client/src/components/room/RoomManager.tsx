@@ -170,43 +170,43 @@ const RoomManager = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="h-screen w-screen bg-black overflow-hidden">
       {/* Subtle gradient background overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-indigo-900/10 to-black opacity-80"></div>
       
-      {/* Blurred circles for depth - reduced intensity */}
-      <div className="absolute top-1/4 -left-24 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 -right-24 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl"></div>
+      {/* Blurred circles for depth - smaller */}
+      <div className="absolute top-1/4 -left-16 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 -right-16 w-56 h-56 bg-indigo-600/10 rounded-full blur-3xl"></div>
       
       {/* Header */}
       <header className="relative z-10 bg-black shadow-md">
-        <div className="max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4 flex justify-between items-center">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white font-sf-pro tracking-tight">WhisperSpace</h1>
+        <div className="max-w-4xl mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white font-sf-pro tracking-tight">WhisperSpace</h1>
           <UserProfileDropdown />
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-12">
-        <div className="text-center mb-8 md:mb-12">
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-3 md:mb-4 font-sf-pro">
+      <div className="relative z-10 max-w-4xl mx-auto px-3 md:px-4 py-4 md:py-8 h-full overflow-hidden">
+        <div className="text-center mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-2 md:mb-3 font-sf-pro">
             Choose Your Chat Experience
           </h2>
-          <p className="text-gray-300 text-base md:text-lg font-sf-pro-text px-4">
+          <p className="text-gray-300 text-sm md:text-base font-sf-pro-text px-4">
             Create a private room or join an existing one with your friends
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-2xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 max-w-xl mx-auto">
           {/* Create Room Card */}
-          <div className="bg-gray-900 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 text-center">
-            <div className="bg-blue-900 rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center mx-auto mb-4 md:mb-6">
-              <Plus className="w-6 h-6 md:w-8 md:h-8 text-white" />
+          <div className="bg-gray-900 rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-6 text-center">
+            <div className="bg-blue-900 rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mx-auto mb-3 md:mb-4">
+              <Plus className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <h3 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4 font-sf-pro">
+            <h3 className="text-base md:text-lg font-semibold text-white mb-2 md:mb-3 font-sf-pro">
               Create Room
             </h3>
-            <p className="text-gray-300 mb-4 md:mb-6 font-sf-pro-text text-sm md:text-base">
+            <p className="text-gray-300 mb-3 md:mb-4 font-sf-pro-text text-xs md:text-sm">
               Start a new chat room and invite your friends with a secure PIN
             </p>
             <Button 
@@ -214,21 +214,21 @@ const RoomManager = () => {
                 resetCreateForm();
                 setShowCreateModal(true);
               }}
-              className="w-full"
+              className="w-full text-sm"
             >
               Create New Room
             </Button>
           </div>
 
           {/* Join Room Card */}
-          <div className="bg-gray-900 rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 text-center">
-            <div className="bg-green-900 rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center mx-auto mb-4 md:mb-6">
-              <Users className="w-6 h-6 md:w-8 md:h-8 text-white" />
+          <div className="bg-gray-900 rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-6 text-center">
+            <div className="bg-green-900 rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mx-auto mb-3 md:mb-4">
+              <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <h3 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4 font-sf-pro">
+            <h3 className="text-base md:text-lg font-semibold text-white mb-2 md:mb-3 font-sf-pro">
               Join Room
             </h3>
-            <p className="text-gray-300 mb-4 md:mb-6 font-sf-pro-text text-sm md:text-base">
+            <p className="text-gray-300 mb-3 md:mb-4 font-sf-pro-text text-xs md:text-sm">
               Enter a room code and PIN to join an existing conversation
             </p>
             <Button 
@@ -237,7 +237,7 @@ const RoomManager = () => {
                 resetJoinForm();
                 setShowJoinModal(true);
               }}
-              className="w-full"
+              className="w-full text-sm"
             >
               Join Existing Room
             </Button>
