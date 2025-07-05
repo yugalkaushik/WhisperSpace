@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { User } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 import { useProfile } from './useProfile';
@@ -8,51 +8,31 @@ export const useAuth = () => {
   const [token, setToken] = useLocalStorage<string | null>('chatflow_token', null);
   const { resetProfile } = useProfile();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('chatflow_token');
-    const storedUserData = localStorage.getItem('chatflow_user');
-    
-    if ((storedToken && !storedUserData) || (!storedToken && storedUserData)) {
-      localStorage.removeItem('chatflow_token');
-      localStorage.removeItem('chatflow_user');
-      setUser(null);
-      setToken(null);
-    }
-  }, [token, setToken, setUser]);
-
+  // Set user and token (used by AuthCallback after Google OAuth)
   const setAuthData = (userData: User, authToken: string) => {
-    localStorage.setItem('chatflow_token', authToken);
-    localStorage.setItem('chatflow_user', JSON.stringify(userData));
-    
-    setToken(authToken);
     setUser(userData);
+    setToken(authToken);
     setError(null);
   };
 
+  // Placeholder functions for compatibility (OAuth flow handles actual auth)
   const login = async () => {
+    // OAuth login is handled by redirecting to Google
     setError('Please use Google Sign-In');
   };
 
   const register = async () => {
+    // OAuth registration is handled by redirecting to Google  
     setError('Please use Google Sign-In');
   };
 
   const logout = () => {
-    setLoading(true);
-    
-    localStorage.removeItem('chatflow_token');
-    localStorage.removeItem('chatflow_user');
-    localStorage.removeItem('currentRoom');
-    localStorage.removeItem('auth_attempt_time');
-    sessionStorage.removeItem('roomManagerRefreshed');
-    
     setUser(null);
     setToken(null);
-    resetProfile();
+    resetProfile(); // Clear profile data from localStorage
     setError(null);
-    setLoading(false);
   };
 
   return { 

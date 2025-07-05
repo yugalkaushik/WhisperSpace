@@ -1,15 +1,6 @@
 export const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://whisperspace-backend.onrender.com') + '/api';
 export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://whisperspace-backend.onrender.com';
 
-if (import.meta.env.DEV) {
-  console.log('🔧 Frontend Config:', {
-    API_BASE_URL,
-    SOCKET_URL,
-    VITE_API_URL: import.meta.env.VITE_API_URL,
-    VITE_SOCKET_URL: import.meta.env.VITE_SOCKET_URL
-  });
-}
-
 export const STORAGE_KEYS = {
   TOKEN: 'chatflow_token',
   USER: 'chatflow_user',
