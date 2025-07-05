@@ -143,11 +143,17 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
 export const googleCallback = async (req: Request, res: Response) => {
   try {
+    console.log('Google callback triggered');
+    console.log('req.user:', req.user);
+    
     const user = req.user as any;
     
     if (!user) {
+      console.log('No user found in callback');
       return res.redirect(`${process.env.CLIENT_URL}/login?error=auth_failed`);
     }
+
+    console.log('User found:', user.email);
 
     // Update user status
     user.isOnline = true;
@@ -156,6 +162,8 @@ export const googleCallback = async (req: Request, res: Response) => {
 
     // Generate token
     const token = generateToken(user._id.toString());
+    
+    console.log('Redirecting to:', `${process.env.CLIENT_URL}/auth/callback?token=${token}`);
     
     // Redirect to frontend with token
     res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);

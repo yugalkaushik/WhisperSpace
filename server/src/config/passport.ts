@@ -13,10 +13,13 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        console.log('Google strategy triggered for:', profile.emails?.[0]?.value);
+        
         // Check if user already exists with this Google ID
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
+          console.log('Existing user found with Google ID');
           return done(null, user);
         }
 
@@ -24,6 +27,7 @@ passport.use(
         user = await User.findOne({ email: profile.emails?.[0]?.value });
 
         if (user) {
+          console.log('Existing user found with email, linking Google account');
           // Link Google account to existing user
           user.googleId = profile.id;
           user.avatar = user.avatar || profile.photos?.[0]?.value || '';

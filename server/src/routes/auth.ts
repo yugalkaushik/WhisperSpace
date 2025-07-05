@@ -10,13 +10,21 @@ import {
 
 const router = express.Router();
 
+// Test endpoint to verify auth routes are working
+router.get('/test', (req, res) => {
+  res.json({ message: 'Auth routes are working', timestamp: new Date().toISOString() });
+});
+
 // Google OAuth routes
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { 
+    failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
+    failureMessage: true 
+  }),
   googleCallback
 );
 
