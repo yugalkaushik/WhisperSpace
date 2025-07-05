@@ -122,17 +122,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Catch all unmatched routes for debugging
-app.get('*', (req, res) => {
-  console.log('Unmatched route:', req.path);
-  res.status(404).json({
-    error: 'Route not found',
-    path: req.path,
-    method: req.method,
-    timestamp: new Date().toISOString()
-  });
-});
-
 // Socket.IO connection handling
 interface AuthenticatedSocket extends Socket {
   userId?: string;
