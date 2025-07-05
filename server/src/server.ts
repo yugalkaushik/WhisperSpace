@@ -98,6 +98,20 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'ChatFlow server is running' });
 });
 
+// Root endpoint to show server is running
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'WhisperSpace Backend Server is Running! 🚀',
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth/*',
+      rooms: '/api/rooms/*'
+    }
+  });
+});
+
 // Socket.IO connection handling
 interface AuthenticatedSocket extends Socket {
   userId?: string;
