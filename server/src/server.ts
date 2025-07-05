@@ -184,18 +184,21 @@ io.on('connection', async (socket: any) => {
 
   // Handle joining rooms
   socket.on('join_room', (room: string) => {
+    console.log(`User ${socket.username} (${socket.userId}) joining room: ${room}`);
     socket.join(room);
     
     // Update user's room list
     const user = onlineUsers.get(socket.userId);
     if (user) {
       user.rooms.add(room);
+      console.log(`User ${socket.username} now in rooms:`, Array.from(user.rooms));
     }
     
     socket.emit('joined_room', room);
     
     // Emit room-specific online users
     const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(room));
+    console.log(`Room ${room} now has ${roomUsers.length} users`);
     io.to(room).emit('users_online', roomUsers);
   });
 
@@ -224,6 +227,8 @@ io.on('connection', async (socket: any) => {
   }) => {
     try {
       const { content, room, messageType = 'text' } = data;
+      
+      console.log(`Message from ${socket.username} in room ${room}: ${content}`);
 
       if (!content || !content.trim()) {
         socket.emit('error', { message: 'Message content is required' });
