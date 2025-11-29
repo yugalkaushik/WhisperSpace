@@ -9,8 +9,10 @@ import {
   googleCallback,
   updateProfile
 } from '../controllers/authController';
+import { getClientBaseUrl } from '../utils/env';
 
 const router = express.Router();
+const clientBaseUrl = getClientBaseUrl();
 
 // Test endpoint to verify auth routes are working
 router.get('/test', (req, res) => {
@@ -28,7 +30,7 @@ router.get('/google',
 
 router.get('/google/callback',
   passport.authenticate('google', { 
-    failureRedirect: `${process.env.CLIENT_URL}/login?error=auth_failed`,
+    failureRedirect: `${clientBaseUrl}/login?error=auth_failed`,
     failureMessage: true 
   }),
   googleCallback

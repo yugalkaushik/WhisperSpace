@@ -27,6 +27,7 @@ import { Room, IRoom } from './models/Room';
 
 // Import services
 import { roomCleanupService } from './services/roomCleanup';
+import { getClientBaseUrl, getMongoUri, getServerPort, getSessionSecret } from './utils/env';
 
 const normalizeRoomCode = (code?: string) => (code || '').trim().toUpperCase();
 
@@ -78,11 +79,15 @@ const deleteRoomIfEmpty = async (roomCode: string, candidateRoom?: IRoom | null)
 
 const app = express();
 const server = createServer(app);
+const CLIENT_ORIGIN = getClientBaseUrl();
+const SESSION_SECRET = getSessionSecret();
+const MONGO_URI = getMongoUri();
+const PORT = getServerPort();
 
 // Socket.IO setup with CORS
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: CLIENT_ORIGIN,
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -93,7 +98,7 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: CLIENT_ORIGIN,
   credentials: true
 }));
 
@@ -103,11 +108,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/whisperspace',
+    mongoUrl: MONGO_URI,
     touchAfter: 24 * 3600 // lazy session update
   }),
   cookie: {
@@ -203,8 +208,8 @@ app.get('/', (req: any, res: any) => {
     timestamp: new Date().toISOString(),
     environment: {
       NODE_ENV: process.env.NODE_ENV,
-      CLIENT_URL: process.env.CLIENT_URL,
-      PORT: process.env.PORT
+      CLIENT_URL: CLIENT_ORIGIN,
+      PORT
     },
     endpoints: {
       health: '/api/health',
@@ -437,8 +442,6 @@ io.on('connection', async (socket: any) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3001;
-
 server.listen(PORT, () => {
   console.log(`🚀 ChatFlow server running on port ${PORT}`);
   console.log(`📡 Socket.IO server ready for connections`);

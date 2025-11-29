@@ -2,21 +2,22 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import { AuthRequest } from '../middleware/auth';
+import { getClientBaseUrl } from '../utils/env';
 
 const generateToken = (userId: string): string => {
   return jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '7d' });
 };
 
-const getClientBaseUrl = () => {
-  if (process.env.CLIENT_URL && process.env.CLIENT_URL.trim().length > 0) {
-    return process.env.CLIENT_URL;
+const redirectToClient = (res: Response, path: string) => {
+  try {
+    const baseUrl = getClientBaseUrl();
+    res.redirect(`${baseUrl}${path}`);
+  } catch (error) {
+    console.error('CLIENT_URL missing; unable to redirect user', error);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Server misconfiguration: CLIENT_URL not set' });
+    }
   }
-
-  if (process.env.NODE_ENV === 'production') {
-    return 'https://whisperspacee.vercel.app';
-  }
-
-  return 'http://localhost:5173';
 };
 
 export const register = async (req: Request, res: Response) => {
@@ -157,17 +158,16 @@ export const googleCallback = async (req: Request, res: Response) => {
   try {
     console.log('Google callback triggered');
     console.log('req.user:', req.user);
-    console.log('CLIENT_URL:', process.env.CLIENT_URL);
+    console.log('CLIENT_URL:', getClientBaseUrl());
     console.log('NODE_ENV:', process.env.NODE_ENV);
     
     const user = req.user as any;
     
     if (!user) {
       console.log('No user found in callback');
-      const baseUrl = getClientBaseUrl();
-      const redirectUrl = `${baseUrl}/login?error=auth_failed`;
-      console.log('Redirecting to (no user):', redirectUrl);
-      return res.redirect(redirectUrl);
+      console.log('Redirecting to (no user)');
+      redirectToClient(res, '/login?error=auth_failed');
+      return;
     }
 
     console.log('User found:', user.email);
@@ -181,20 +181,15 @@ export const googleCallback = async (req: Request, res: Response) => {
     const token = generateToken(user._id.toString());
     
     // Use localhost for development, production URL for production
-    const baseUrl = getClientBaseUrl();
-
-    const redirectUrl = `${baseUrl}/auth/callback?token=${token}`;
-
-    console.log('Redirecting to (success):', redirectUrl);
+    console.log('Redirecting to (success)');
     
     // Redirect back to frontend callback handler with token
-    res.redirect(redirectUrl);
+    redirectToClient(res, `/auth/callback?token=${token}`);
+    return;
   } catch (error) {
     console.error('Google callback error:', error);
-    const baseUrl = getClientBaseUrl();
-    const redirectUrl = `${baseUrl}/login?error=server_error`;
-    console.log('Redirecting to (error):', redirectUrl);
-    res.redirect(redirectUrl);
+    console.log('Redirecting to (error)');
+    redirectToClient(res, '/login?error=server_error');
   }
 };
 

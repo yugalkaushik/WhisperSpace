@@ -1,16 +1,14 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { User, IUser } from '../models/User';
+import { getGoogleCallbackUrl } from '../utils/env';
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || 
-        (process.env.NODE_ENV === 'production' 
-          ? "https://whisperspace-server.vercel.app/api/auth/google/callback"
-          : `http://localhost:${process.env.PORT || 3001}/api/auth/google/callback`)
+      callbackURL: getGoogleCallbackUrl()
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

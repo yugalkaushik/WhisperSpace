@@ -13,15 +13,18 @@ import passport from '../src/config/passport';
 // Import routes
 import authRoutes from '../src/routes/auth';
 import roomRoutes from '../src/routes/rooms';
+import { getClientBaseUrl, getSessionSecret } from '../src/utils/env';
 
 const app = express();
+const clientOrigin = getClientBaseUrl();
+const sessionSecret = getSessionSecret();
 
 // Connect to database
 connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "https://whisperspacee.vercel.app",
+  origin: clientOrigin,
   credentials: true
 }));
 
@@ -30,7 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Session middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {

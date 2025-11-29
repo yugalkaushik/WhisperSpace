@@ -1,5 +1,9 @@
-export const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://whisperspace-backend.onrender.com') + '/api';
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://whisperspace-backend.onrender.com';
+const sanitizeBaseUrl = (value?: string) => value?.replace(/\/$/, '');
+
+const apiBase = sanitizeBaseUrl(import.meta.env.VITE_API_URL) || 'https://whisperspace-backend-kfg9.onrender.com';
+export const API_BASE_URL = `${apiBase}/api`;
+
+export const SOCKET_URL = sanitizeBaseUrl(import.meta.env.VITE_SOCKET_URL) || 'https://whisperspace-backend-kfg9.onrender.com';
 
 export const STORAGE_KEYS = {
   TOKEN: 'chatflow_token',

@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
+import { getMongoUri } from '../utils/env';
 
 const connectDB = async (): Promise<void> => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/chatflow';
+    const mongoURI = getMongoUri();
     
     const conn = await mongoose.connect(mongoURI, {
       // Remove deprecated options as they're no longer needed in newer versions

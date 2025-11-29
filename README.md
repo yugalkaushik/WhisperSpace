@@ -1,4 +1,4 @@
-## Deployment
+# Deployment
 
 The client and server are intended to be deployed separately:
 
