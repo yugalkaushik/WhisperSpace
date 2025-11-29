@@ -1,35 +1,50 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useCallback } from 'react';
 import { SocketContext } from '../../contexts/socket-context';
 import Input from '../ui/Input';
-import { Button } from '../ui/Button';
-import { Smile } from 'lucide-react';
+import { Smile, Navigation } from 'lucide-react';
 import { MESSAGE_TYPES, TYPING_TIMEOUT } from '../../utils/constants';
 import EmojiPicker from 'emoji-picker-react';
 
-const MessageInput = () => {
+interface MessageInputProps {
+  variant?: 'standalone' | 'embedded';
+}
+
+const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
+  const helperTextId = 'message-input-helper';
+
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const { socket, startTyping, stopTyping, currentRoom } = useContext(SocketContext);
+  const { sendMessage, startTyping, stopTyping, currentRoom } = useContext(SocketContext);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
+  const getRoomCode = useCallback(() => {
+    if (currentRoom?.code) {
+      return currentRoom.code.toUpperCase();
+    }
+    return null;
+  }, [currentRoom?.code]);
+
   const handleSend = () => {
-    if (message.trim() && currentRoom?.code) {
-      socket?.emit('send_message', {
-        content: message,
-        room: currentRoom.code,
-        messageType: message.length === 1 && /[\uD800-\uDFFF]/.test(message) ? MESSAGE_TYPES.EMOJI : MESSAGE_TYPES.TEXT,
-      });
+    const roomCode = getRoomCode();
+    const messageContent = message.trim();
+    if (messageContent && roomCode) {
+      const messageType = messageContent.length === 1 && /[\uD800-\uDFFF]/.test(messageContent)
+        ? MESSAGE_TYPES.EMOJI
+        : MESSAGE_TYPES.TEXT;
+
+      sendMessage(messageContent, roomCode, messageType);
       setMessage('');
-      stopTyping(currentRoom.code);
+      stopTyping(roomCode);
       if (typingTimeout) clearTimeout(typingTimeout);
     }
   };
 
   const handleTyping = () => {
-    if (currentRoom?.code) {
-      startTyping(currentRoom.code);
+    const roomCode = getRoomCode();
+    if (roomCode) {
+      startTyping(roomCode);
       if (typingTimeout) clearTimeout(typingTimeout);
-      const timeout = setTimeout(() => stopTyping(currentRoom.code), TYPING_TIMEOUT);
+      const timeout = setTimeout(() => stopTyping(roomCode), TYPING_TIMEOUT);
       setTypingTimeout(timeout);
     }
   };
@@ -39,10 +54,8 @@ const MessageInput = () => {
     setShowEmojiPicker(false);
   };
 
-  // Handle keyboard shortcut for emoji picker
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+E or Cmd+E to open emoji picker
       if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
         e.preventDefault();
         setShowEmojiPicker(prev => !prev);
@@ -53,21 +66,33 @@ const MessageInput = () => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       if (typingTimeout) clearTimeout(typingTimeout);
-      stopTyping('general');
+      const roomCode = getRoomCode();
+      if (roomCode) {
+        stopTyping(roomCode);
+      }
     };
-  }, [typingTimeout, stopTyping]);
+  }, [typingTimeout, stopTyping, getRoomCode]);
+
+  const wrapperClasses = variant === 'embedded'
+    ? 'px-4 py-4'
+    : 'border-t border-white/5 bg-[#070707] px-4 py-4';
 
   return (
-    <div className="p-2 md:p-3 bg-zinc-900 border-t border-zinc-800/50">
-      <div className="flex items-center space-x-2">
+    <div className={wrapperClasses}>
+      <div className="flex items-center gap-3 rounded-3xl border border-white/10 bg-[#0f0f0f] px-3 py-2 shadow-inner shadow-black/60">
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="p-1.5 text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-md transition-colors flex-shrink-0"
+          type="button"
+          className="rounded-2xl border border-white/10 p-2 text-slate-300 transition hover:border-white/30 hover:text-white"
           aria-label="Emoji picker"
+          aria-expanded={showEmojiPicker}
           title="Insert emoji (Ctrl+E)"
         >
-          <Smile className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          <Smile className="h-4 w-4" />
         </button>
+        <p id={helperTextId} className="sr-only">
+          Type your message. Press Enter to send or Shift plus Enter for a new line. Use Ctrl plus E to toggle emoji picker.
+        </p>
         <Input
           id="message-input"
           type="text"
@@ -81,21 +106,26 @@ const MessageInput = () => {
             }
           }}
           placeholder="Type a message..."
-          className="flex-1 bg-zinc-800 text-white placeholder-zinc-400 border-0 rounded-md py-1.5 md:py-2 text-sm focus:ring-1 focus:ring-indigo-500"
+          variant="bare"
+          className="flex-1"
+          ariaLabel="Message composer"
+          ariaDescribedBy={helperTextId}
         />
-        <Button 
-          onClick={handleSend} 
-          disabled={!message.trim()} 
-          className="px-2 py-1.5 md:px-3 md:py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-700 disabled:text-zinc-400 
-                    text-white font-medium transition-colors text-sm flex-shrink-0"
-          variant="primary"
+        <button
+          onClick={handleSend}
+          disabled={!message.trim() || !getRoomCode()}
+          type="button"
+          aria-label="Send message"
+          className="group flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-[#0a0f1c] text-white transition hover:border-white/40 hover:text-sky-200 disabled:cursor-not-allowed disabled:opacity-30"
         >
-          Send
-        </Button>
+          <Navigation className="h-4 w-4 transition group-hover:translate-x-0.5" strokeWidth={2.4} />
+        </button>
       </div>
       {showEmojiPicker && (
-        <div className="absolute bottom-12 md:bottom-14 left-2 md:left-3 z-50 rounded-lg overflow-hidden shadow-xl">
-          <EmojiPicker onEmojiClick={handleEmojiSelect} />
+        <div className="relative" aria-live="polite">
+          <div className="absolute bottom-2 left-0 z-50 overflow-hidden rounded-2xl border border-white/10 shadow-2xl" role="dialog" aria-label="Emoji picker">
+            <EmojiPicker onEmojiClick={handleEmojiSelect} />
+          </div>
         </div>
       )}
     </div>

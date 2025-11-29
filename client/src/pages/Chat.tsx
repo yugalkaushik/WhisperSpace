@@ -21,33 +21,14 @@ const Chat = () => {
       return;
     }
     
-    // Get room info from state or URL
-    let roomCode = location.state?.roomCode;
-    let roomName = location.state?.roomName;
+    const roomCode = location.state?.roomCode?.toUpperCase();
+    const roomName = location.state?.roomName;
     
-    // If we don't have room data from state, try to get it from URL or localStorage
     if (!roomCode || !roomName) {
-      // Try localStorage first
-      try {
-        const stored = localStorage.getItem('currentRoom');
-        if (stored) {
-          const parsedRoom = JSON.parse(stored);
-          roomCode = parsedRoom.code;
-          roomName = parsedRoom.name;
-          console.log('Retrieved room data from localStorage:', parsedRoom);
-        }
-      } catch {
-        console.log('Error getting room from localStorage');
-      }
-      
-      // If still no room data, redirect to room manager
-      if (!roomCode || !roomName) {
-        navigate('/rooms');
-        return;
-      }
+      navigate('/rooms');
+      return;
     }
 
-    // Create room object and update context
     const room: Room = {
       _id: location.state?.roomId || '',
       name: roomName,
@@ -60,15 +41,8 @@ const Chat = () => {
       updatedAt: new Date()
     };
 
-    // Set room data in state and context
     setRoomData(room);
     setCurrentRoom?.(room);
-    
-    // Store room info in localStorage for components that need it
-    localStorage.setItem('currentRoom', JSON.stringify({
-      name: room.name,
-      code: room.code
-    }));
   }, [user, navigate, location.state, setCurrentRoom]);
 
   // Initialize socket with room code
@@ -85,7 +59,7 @@ const Chat = () => {
     );
   }
 
-  return <ChatRoom />;
+  return <ChatRoom initialRoom={{ name: roomData.name, code: roomData.code }} />;
 };
 
 export default Chat;

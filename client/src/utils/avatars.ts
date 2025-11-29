@@ -1,106 +1,110 @@
-// DiceBear Thumbs avatar configuration
-export const AVATAR_OPTIONS = [
+const DEFAULT_AVATAR_STYLE = 'adventurer-neutral';
+
+type AvatarOption = {
+  id: string;
+  name: string;
+  seed: string;
+  gradient: string;
+  accent: string;
+  backgroundColors: [string, string];
+  style?: string;
+};
+
+export const AVATAR_OPTIONS: AvatarOption[] = [
   {
-    id: 'avatar1',
-    name: 'Sky Blue',
-    color: '69d2e7',
-    seed: 'whale'
+    id: 'solstice',
+    name: 'Solstice Veil',
+    seed: 'solstice-veil',
+    gradient: 'linear-gradient(145deg,#ff8a05,#facc15)',
+    accent: '#f97316',
+    backgroundColors: ['0b1120', '1f2937']
   },
   {
-    id: 'avatar2',
-    name: 'Coral',
-    color: 'ff9e9d',
-    seed: 'sunset'
+    id: 'nocturne',
+    name: 'Nocturne Bloom',
+    seed: 'nocturne-bloom',
+    gradient: 'linear-gradient(145deg,#a855f7,#6366f1)',
+    accent: '#a855f7',
+    backgroundColors: ['0e1034', '1f165f']
   },
   {
-    id: 'avatar3',
-    name: 'Mint',
-    color: 'a7dbd8',
-    seed: 'spring'
+    id: 'aether',
+    name: 'Aether Drift',
+    seed: 'aether-drift',
+    gradient: 'linear-gradient(145deg,#2dd4bf,#0ea5e9)',
+    accent: '#22d3ee',
+    backgroundColors: ['031b2f', '0f2b46']
   },
   {
-    id: 'avatar4',
-    name: 'Ruby',
-    color: 'e84a5f',
-    seed: 'ruby'
+    id: 'ember',
+    name: 'Ember Pulse',
+    seed: 'ember-pulse',
+    gradient: 'linear-gradient(145deg,#fb7185,#f472b6)',
+    accent: '#fb7185',
+    backgroundColors: ['220c1c', '3b0f2f']
   },
   {
-    id: 'avatar5',
-    name: 'Lavender',
-    color: 'b6a4cc',
-    seed: 'mystery'
+    id: 'mirage',
+    name: 'Mirage Arc',
+    seed: 'mirage-arc',
+    gradient: 'linear-gradient(145deg,#38bdf8,#818cf8)',
+    accent: '#60a5fa',
+    backgroundColors: ['071225', '152a4d']
   },
   {
-    id: 'avatar6',
-    name: 'Forest',
-    color: '4caf50',
-    seed: 'forest'
+    id: 'flora',
+    name: 'Flora Prism',
+    seed: 'flora-prism',
+    gradient: 'linear-gradient(145deg,#4ade80,#22c55e)',
+    accent: '#4ade80',
+    backgroundColors: ['041f18', '064e3b']
   },
   {
-    id: 'avatar7',
-    name: 'Sunny',
-    color: 'ffd34e',
-    seed: 'sunny'
+    id: 'halo',
+    name: 'Halo Courier',
+    seed: 'halo-courier',
+    gradient: 'linear-gradient(145deg,#f0abfc,#c084fc)',
+    accent: '#d8b4fe',
+    backgroundColors: ['1a1028', '291347']
   },
   {
-    id: 'avatar8',
-    name: 'Ocean',
-    color: '3498db',
-    seed: 'ocean'
-  },
-  {
-    id: 'avatar9',
-    name: 'Berry',
-    color: 'ee4035',
-    seed: 'berry'
-  },
-  {
-    id: 'avatar10',
-    name: 'Coffee',
-    color: '795548',
-    seed: 'coffee'
-  },
-  {
-    id: 'avatar11',
-    name: 'Emerald',
-    color: '2ecc71',
-    seed: 'emerald'
-  },
-  {
-    id: 'avatar12',
-    name: 'Royal',
-    color: '5e50a1',
-    seed: 'royal'
+    id: 'glacier',
+    name: 'Glacier Echo',
+    seed: 'glacier-echo',
+    gradient: 'linear-gradient(145deg,#67e8f9,#22d3ee)',
+    accent: '#67e8f9',
+    backgroundColors: ['031b2d', '082f4a']
   }
-] as const;
+];
 
-export type AvatarId = typeof AVATAR_OPTIONS[number]['id'];
+export type AvatarId = (typeof AVATAR_OPTIONS)[number]['id'];
 
-// Helper function to get avatar color by ID
-export const getAvatarColor = (avatarId: string): string => {
-  if (!avatarId) return AVATAR_OPTIONS[0].color;
-  const avatar = AVATAR_OPTIONS.find(a => a.id === avatarId);
-  return avatar?.color || AVATAR_OPTIONS[0].color; // Fallback to first avatar
+const findAvatar = (avatarId?: string): AvatarOption => {
+  if (!avatarId) return AVATAR_OPTIONS[0];
+  return AVATAR_OPTIONS.find(avatar => avatar.id === avatarId) || AVATAR_OPTIONS[0];
 };
 
-// Helper function to get avatar seed by ID
-export const getAvatarSeed = (avatarId: string): string => {
-  if (!avatarId) return AVATAR_OPTIONS[0].seed;
-  const avatar = AVATAR_OPTIONS.find(a => a.id === avatarId);
-  return avatar?.seed || AVATAR_OPTIONS[0].seed; // Fallback to first avatar
-};
+export const getAvatarColor = (avatarId: string): string => findAvatar(avatarId).backgroundColors[0];
 
-// Helper function to get DiceBear Thumbs avatar URL
+export const getAvatarSeed = (avatarId: string): string => findAvatar(avatarId).seed;
+
 export const getAvatarUrl = (avatarId: string, username: string = ''): string => {
-  const color = getAvatarColor(avatarId);
-  const seed = getAvatarSeed(avatarId) || username || 'avatar';
-  
-  // Generate URL for DiceBear Thumbs avatar
-  return `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${color}&rotate=5`;
+  const avatar = findAvatar(avatarId);
+  const style = avatar.style || DEFAULT_AVATAR_STYLE;
+  const seed = avatar.seed || username || 'avatar';
+
+  const params = new URLSearchParams({
+    seed,
+    backgroundType: 'gradientLinear',
+    radius: '45',
+    size: '360'
+  });
+
+  avatar.backgroundColors.forEach(color => {
+    params.append('backgroundColor', color);
+  });
+
+  return `https://api.dicebear.com/7.x/${style}/png?${params.toString()}`;
 };
 
-// Helper function to get avatar name by ID
-export const getAvatarName = (avatarId: string): string => {
-  const avatar = AVATAR_OPTIONS.find(a => a.id === avatarId);
-  return avatar?.name || AVATAR_OPTIONS[0].name; // Fallback to first avatar
-};
+export const getAvatarName = (avatarId: string): string => findAvatar(avatarId).name;

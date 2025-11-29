@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Socket } from 'socket.io-client';
 import type { OnlineUser, Message, TypingUser, Room } from '../types';
+import { MESSAGE_TYPES } from '../utils/constants';
 import { SocketContext } from './socket-context';
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
@@ -12,39 +13,45 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
 
-  const sendMessage = (content: string, room?: string) => {
-    const roomToUse = room || currentRoom?.code;
-    if (roomToUse) {
-      socket?.emit('send_message', { content, room: roomToUse });
+  const normalizeRoomCode = (code?: string) => code?.trim().toUpperCase() || undefined;
+
+  const sendMessage = (content: string, room?: string, messageType: string = MESSAGE_TYPES.TEXT) => {
+    const roomToUse = normalizeRoomCode(room || currentRoom?.code);
+    if (roomToUse && socket) {
+      socket.emit('send_message', { content, room: roomToUse, messageType });
     }
   };
 
-  // Removed edit and delete message functions (messages are now ephemeral)
-
   const joinRoom = (room: string) => {
-    socket?.emit('join_room', room);
+    const normalized = normalizeRoomCode(room);
+    if (normalized) {
+      socket?.emit('join_room', normalized);
+    }
   };
 
   const leaveRoom = (room: string) => {
-    // Emitting leave_room event
-    socket?.emit('leave_room', room);
-    // Clear current room if it's the one being left
-    if (currentRoom?.code === room) {
+    const normalized = normalizeRoomCode(room);
+    if (!normalized) {
+      return;
+    }
+
+    socket?.emit('leave_room', normalized);
+    if (currentRoom?.code?.toUpperCase() === normalized) {
       setCurrentRoom(null);
     }
   };
 
   const startTyping = (room?: string) => {
-    const roomToUse = room || currentRoom?.code;
-    if (roomToUse) {
-      socket?.emit('typing_start', { room: roomToUse });
+    const roomToUse = normalizeRoomCode(room || currentRoom?.code);
+    if (roomToUse && socket) {
+      socket.emit('typing_start', { room: roomToUse });
     }
   };
 
   const stopTyping = (room?: string) => {
-    const roomToUse = room || currentRoom?.code;
-    if (roomToUse) {
-      socket?.emit('typing_stop', { room: roomToUse });
+    const roomToUse = normalizeRoomCode(room || currentRoom?.code);
+    if (roomToUse && socket) {
+      socket.emit('typing_stop', { room: roomToUse });
     }
   };
 

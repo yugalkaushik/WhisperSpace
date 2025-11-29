@@ -12,21 +12,41 @@ interface InputProps {
   id?: string;
   label?: string;
   error?: string;
+  helperText?: string;
+  variant?: 'default' | 'bare';
+  ariaLabel?: string;
+  ariaDescribedBy?: string;
 }
 
-const Input = ({ 
-  type, 
-  value, 
-  onChange, 
-  onKeyDown, 
-  placeholder, 
-  className, 
-  maxLength, 
-  readOnly, 
+const Input = ({
+  type,
+  value,
+  onChange,
+  onKeyDown,
+  placeholder,
+  className,
+  maxLength,
+  readOnly,
   id,
   label,
-  error
+  error,
+  helperText,
+  variant = 'default',
+  ariaLabel,
+  ariaDescribedBy
 }: InputProps) => {
+  const baseClasses =
+    variant === 'bare'
+      ? 'w-full bg-transparent text-white placeholder-white/50 text-sm'
+      : 'w-full px-4 py-2.5 rounded-2xl bg-white/5 text-white border border-white/10 shadow-inner shadow-black/20 text-sm';
+
+  const interactionClasses =
+    variant === 'bare'
+      ? 'focus:outline-none focus:ring-0 border-0'
+      : 'transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50';
+
+  const readOnlyClasses = readOnly ? 'cursor-default opacity-70' : variant === 'bare' ? '' : 'hover:bg-white/8';
+
   return (
     <div className="w-full">
       {label && (
@@ -46,8 +66,13 @@ const Input = ({
         placeholder={placeholder}
         maxLength={maxLength}
         readOnly={readOnly}
-        className={`w-full px-3 py-2 rounded-lg bg-zinc-800 text-white shadow-md shadow-black/20 transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-indigo-500/40 focus:border-transparent hover:border-transparent placeholder-indigo-300/60 font-sf-pro-text text-sm ${readOnly ? 'cursor-default bg-zinc-900' : ''} ${className || ''}`}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        className={`${baseClasses} ${interactionClasses} ${readOnlyClasses} ${className || ''}`.trim()}
       />
+      {helperText && !error && (
+        <p className="mt-1 text-xs text-slate-400">{helperText}</p>
+      )}
       {error && (
         <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
       )}

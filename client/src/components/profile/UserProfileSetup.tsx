@@ -20,15 +20,13 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
   isLoading = false
 }) => {
   const [nickname, setNickname] = useState(currentUser.nickname || currentUser.username || '');
-  const [selectedAvatar, setSelectedAvatar] = useState(currentUser.selectedAvatar || 'avatar1');
+  const [selectedAvatar, setSelectedAvatar] = useState(currentUser.selectedAvatar || AVATAR_OPTIONS[0].id);
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
-    // Form submit
     e.preventDefault();
     setError('');
 
-    // Form validation
     if (!nickname.trim()) {
       setError('Please enter a nickname');
       return;
@@ -50,125 +48,97 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-black p-3 overflow-hidden" style={{ height: '100dvh' }}>
-      {/* Subtle gradient background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-indigo-900/20 to-black opacity-80"></div>
-      
-      {/* Blurred circles for depth */}
-      <div className="absolute top-1/4 -left-24 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 -right-24 w-56 h-56 bg-indigo-600/20 rounded-full blur-3xl"></div>
-      
-      {/* Glass card with Apple-style transparency */}
-      <div className="relative z-10 backdrop-blur-xl bg-black/30 p-4 md:p-6 rounded-2xl shadow-2xl w-full max-w-md md:max-w-lg border border-white/10">
-        <div className="text-center mb-4 md:mb-6">
-          <h1 className="text-xl md:text-2xl font-bold text-white mb-2">
-            Complete Your Profile
-          </h1>
-          <p className="text-sm text-gray-300/80">
-            Choose a nickname and avatar to personalize your WhisperSpace experience
-          </p>
-        </div>
+    <div className="app-shell flex items-center justify-center px-4 py-10 text-white">
+      <div className="app-grid" />
+      <div className="glow-pill bg-blue-900/30 -top-10 -left-6" />
+      <div className="glow-pill bg-sky-500/30 bottom-0 right-0" />
 
-        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-          {/* Nickname Section */}
-          <div>
+      <div className="relative z-10 w-full max-w-3xl">
+        <div className="frosted-card rounded-[32px] p-6 md:p-10">
+          <div className="text-center">
+            <p className="pill-badge bg-white/10 text-slate-200">PROFILE</p>
+            <h1 className="mt-4 text-3xl font-semibold md:text-4xl">Lock in your Whisper identity</h1>
+            <p className="mt-3 text-slate-300">Claim a nickname and choose from art-grade portraits crafted with DiceBear’s adventurer set. Every option stays crisp on 4K displays.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-8">
             <Input
               id="nickname"
-              label="Display Nickname"
+              label="Display nickname"
               type="text"
               value={nickname}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-              placeholder="Enter your display name"
+              placeholder="ex: Midnight Orbit"
               maxLength={30}
-              className="w-full"
+              helperText="Visible to everyone you chat with. Keep it under 30 characters."
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              This is how others will see you in chat rooms (instead of your Google name)
-            </p>
-          </div>
 
-          {/* Avatar Selection */}
-          <div>
-            <label className="block text-sm font-medium text-white mb-3">
-              Choose Your Avatar
-            </label>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 md:gap-3 p-3 bg-black/40 backdrop-blur-md rounded-xl shadow-inner border border-white/5">
-              {AVATAR_OPTIONS.map((avatar) => (
-                <button
-                  key={avatar.id}
-                  type="button"
-                  onClick={() => setSelectedAvatar(avatar.id)}
-                  className={`relative p-1.5 rounded-xl transition-all duration-200 ${
-                    selectedAvatar === avatar.id
-                      ? 'bg-white/10 border border-white/20 shadow-lg scale-105'
-                      : 'border border-white/5 hover:border-white/15 hover:bg-white/5 hover:scale-105'
-                  }`}
-                  title={avatar.name}
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full mx-auto shadow-xl transition-all duration-300 transform hover:scale-110 ring-2 ring-black overflow-hidden">
-                    <img
-                      src={getAvatarUrl(avatar.id)}
-                      alt={avatar.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                  {selectedAvatar === avatar.id && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Select an avatar that represents you in the chat
-            </p>
-          </div>
-
-          {/* Preview */}
-          <div className="backdrop-blur-md bg-white/10 rounded-xl p-4 border border-white/10">
-            <h3 className="text-sm font-medium text-white mb-3">Preview</h3>
-            <div className="flex items-center space-x-3">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 shadow-xl transition-all duration-300">
-                <img
-                  src={getAvatarUrl(selectedAvatar, nickname)}
-                  alt="Selected avatar"
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-300">Avatar gallery</label>
+                <span className="text-xs text-slate-400">Adventurer series • 4K ready</span>
               </div>
-              <div>
-                <p className="font-medium text-white">
-                  {nickname || 'Your Nickname'}
-                </p>
-                <p className="text-sm text-indigo-300/80">
-                  {currentUser.email}
-                </p>
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                {AVATAR_OPTIONS.map((avatar) => {
+                  const isActive = selectedAvatar === avatar.id;
+                  return (
+                    <button
+                      key={avatar.id}
+                      type="button"
+                      onClick={() => setSelectedAvatar(avatar.id)}
+                      className={`group flex flex-col items-center gap-3 rounded-[32px] border-2 px-4 py-4 transition ${
+                        isActive ? 'border-white bg-white/10 shadow-2xl shadow-blue-500/20' : 'border-transparent bg-white/5 hover:border-white/40'
+                      }`}
+                    >
+                      <div
+                        className={`relative flex h-24 w-24 items-center justify-center rounded-[36px] border-2 ${
+                          isActive ? 'border-white/80' : 'border-white/10'
+                        }`}
+                        style={{ backgroundImage: avatar.gradient }}
+                      >
+                        <img
+                          src={getAvatarUrl(avatar.id, nickname)}
+                          alt={avatar.name}
+                          className="h-20 w-20 rounded-3xl object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <p className="text-sm font-semibold text-white">{avatar.name}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </div>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm backdrop-blur-md">
-              {error}
+            <div className="rounded-3xl border border-white/10 bg-[#07142b]/80 p-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Preview</p>
+              <div className="mt-3 flex items-center gap-3">
+                <div className="h-16 w-16 rounded-2xl border border-white/20 bg-black/40 p-1">
+                  <img
+                    src={getAvatarUrl(selectedAvatar, nickname)}
+                    alt="Selected avatar"
+                    className="h-full w-full rounded-xl object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold">{nickname || 'Your Nickname'}</p>
+                  <p className="text-sm text-slate-400">{currentUser.email}</p>
+                </div>
+              </div>
             </div>
-          )}
 
-          <div className="flex space-x-4">
-            <Button
-              type="submit"
-              disabled={isLoading || !nickname.trim()}
-              className="w-full py-3 text-base backdrop-blur-md bg-white/10 hover:bg-white/15 
-                       border border-white/10 text-white transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-indigo-500/20"
-              onClick={handleSubmit}
-            >
-              {isLoading ? 'Saving...' : 'Continue to WhisperSpace'}
+            {error && (
+              <div className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                {error}
+              </div>
+            )}
+
+            <Button type="submit" disabled={isLoading || !nickname.trim()} size="lg" className="w-full">
+              {isLoading ? 'Saving…' : 'Continue to WhisperSpace'}
             </Button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

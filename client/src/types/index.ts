@@ -81,7 +81,7 @@ export interface SocketContextType {
   messages: Message[];
   typingUsers: TypingUser[];
   currentRoom: Room | null;
-  sendMessage: (content: string, room?: string) => void;
+  sendMessage: (content: string, room?: string, messageType?: string) => void;
   joinRoom: (room: string) => void;
   leaveRoom: (room: string) => void;
   startTyping: (room?: string) => void;

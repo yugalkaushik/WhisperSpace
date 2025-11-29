@@ -11,16 +11,26 @@ const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-black p-6 md:p-8 rounded-2xl md:rounded-3xl w-full max-w-md shadow-2xl">
-        <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-white font-sf-pro">{title}</h2>
-        {children}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xl"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="frosted-card w-full max-w-lg p-6 md:p-8 relative">
         <button
-          className="mt-4 md:mt-6 px-4 py-2 rounded-xl text-white bg-gray-800 hover:bg-gray-700 transition-all duration-300 font-medium font-sf-pro-text shadow-md text-sm md:text-base"
+          aria-label="Close dialog"
           onClick={onClose}
+          className="absolute right-5 top-5 text-slate-400 hover:text-white transition"
         >
-          Close
+          ×
         </button>
+        <h2 className="text-2xl font-semibold mb-6 text-white font-sf-pro gradient-text">
+          {title}
+        </h2>
+        {children}
       </div>
     </div>
   );

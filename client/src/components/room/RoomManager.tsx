@@ -25,12 +25,10 @@ const RoomManager = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Generate a good default room name
   const generateDefaultRoomName = () => {
     return 'Chat Room';
   };
 
-  // Initialize with a default room name
   useEffect(() => {
     if (!roomName) {
       setRoomName(generateDefaultRoomName());
@@ -43,10 +41,8 @@ const RoomManager = () => {
       return;
     }
     
-    // Check if user and token exist and are valid
     if (!user || !token) {
       setError('Authentication required. Please log in again.');
-      // Refresh the token by logging out and redirecting to login
       navigate('/login');
       return;
     }
@@ -55,19 +51,16 @@ const RoomManager = () => {
     setError('');
     
     try {
-      // First validate the token/user is still valid
       try {
         await axios.get(`${API_BASE_URL}/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } catch {
-        // Token is invalid or user doesn't exist
         setError('Your session has expired. Please log in again.');
         navigate('/login');
         return;
       }
 
-      // Now create the room
       const response = await axios.post(`${API_BASE_URL}/rooms/create`, {
         name: roomName,
         pin: roomPin
@@ -75,19 +68,16 @@ const RoomManager = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Store room data and show success modal
       setCreatedRoomCode(response.data.roomCode);
       setCreatedRoomName(roomName);
       setShowCreateModal(false);
       setShowSuccessModal(true);
       
-      // Clear form data
       resetCreateForm();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || 'Failed to create room');
       
-      // If it's a user not found error, redirect to login
       if (error.response?.data?.message === 'User not found') {
         navigate('/login');
       }
@@ -106,17 +96,17 @@ const RoomManager = () => {
     setError('');
 
     try {
+      const formattedCode = joinRoomCode.trim().toUpperCase();
       const response = await axios.post(`${API_BASE_URL}/rooms/join`, {
-        roomCode: joinRoomCode,
+        roomCode: formattedCode,
         pin: joinPin
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Navigate to transition screen with room data
       navigate('/transition', { 
         state: { 
-          roomCode: joinRoomCode,
+          roomCode: response.data.roomCode || formattedCode,
           roomName: response.data.roomName,
           action: 'joined'
         }
@@ -170,82 +160,112 @@ const RoomManager = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-black overflow-hidden" style={{ height: '100dvh' }}>
-      {/* Subtle gradient background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-indigo-900/10 to-black opacity-80"></div>
-      
-      {/* Blurred circles for depth - smaller */}
-      <div className="absolute top-1/4 -left-16 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 -right-16 w-56 h-56 bg-indigo-600/10 rounded-full blur-3xl"></div>
-      
-      {/* Header */}
-      <header className="relative z-10 bg-black shadow-md">
-        <div className="max-w-4xl mx-auto px-3 md:px-4 py-2 md:py-3 flex justify-between items-center">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white font-sf-pro tracking-tight">WhisperSpace</h1>
-          <UserProfileDropdown />
+    <div className="app-shell text-white">
+      <div className="app-grid" />
+      <div className="glow-pill bg-blue-900/40 -top-10 -left-6" />
+      <div className="glow-pill bg-sky-600/30 bottom-0 right-0" />
+
+      <header className="relative z-10 border-b border-white/5 bg-transparent">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <span className="pill-badge bg-white/5 text-slate-200">Control center</span>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
+              WhisperSpace Rooms
+            </h1>
+            <p className="text-sm text-slate-400">
+              Spin up a fresh invite-only room or hop back into an existing space.
+            </p>
+          </div>
+          <div className="flex w-full justify-end">
+            <div className="flex w-full flex-col overflow-hidden rounded-[32px] border border-white/10 bg-[#040b1d]/85 shadow-lg shadow-black/30 sm:w-auto sm:flex-row">
+              <div className="flex h-16 flex-1 items-center justify-between bg-gradient-to-r from-[#0d2c56]/40 via-[#0b1e3a]/20 to-transparent px-5">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.45em] text-slate-300">Status</p>
+                  <div className="mt-1.5 flex items-center gap-2 text-sm font-semibold text-white">
+                    <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/50" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.9)]" />
+                    </span>
+                    Online
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-white/10 sm:border-t-0 sm:border-l">
+                <UserProfileDropdown variant="inline" />
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-3 md:px-4 py-4 md:py-8 h-full overflow-hidden">
-        <div className="text-center mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-2 md:mb-3 font-sf-pro">
-            Choose Your Chat Experience
-          </h2>
-          <p className="text-gray-300 text-sm md:text-base font-sf-pro-text px-4">
-            Create a private room or join an existing one with your friends
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4 md:gap-6 max-w-xl mx-auto">
-          {/* Create Room Card */}
-          <div className="bg-gray-900 rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-6 text-center">
-            <div className="bg-blue-900 rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mx-auto mb-3 md:mb-4">
-              <Plus className="w-5 h-5 md:w-6 md:h-6 text-white" />
+      <main className="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col gap-8 overflow-hidden px-4 py-8">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="frosted-card flex h-full flex-col rounded-[32px] p-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl bg-white/10 p-3">
+                <Plus className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Host</p>
+                <h3 className="text-xl font-semibold">Create a private room</h3>
+              </div>
             </div>
-            <h3 className="text-base md:text-lg font-semibold text-white mb-2 md:mb-3 font-sf-pro">
-              Create Room
-            </h3>
-            <p className="text-gray-300 mb-3 md:mb-4 font-sf-pro-text text-xs md:text-sm">
-              Start a new chat room and invite your friends with a secure PIN
-            </p>
-            <Button 
+            <div className="mt-3 flex flex-1 flex-col gap-6 text-sm text-slate-300">
+              <p>
+                Name the space, set a four-digit pin, and invite only the folks you trust.
+              </p>
+              <div className="space-y-3 text-xs text-slate-400">
+                <div className="flex items-center gap-2">
+                  <Lock size={14} />
+                  Secure PIN unlock only
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users size={14} />
+                  Unlimited listeners, low latency
+                </div>
+              </div>
+            </div>
+            <Button
+              size="lg"
+              className="mt-6 w-full"
               onClick={() => {
                 resetCreateForm();
                 setShowCreateModal(true);
               }}
-              className="w-full text-sm"
             >
-              Create New Room
+              Create new room
             </Button>
           </div>
 
-          {/* Join Room Card */}
-          <div className="bg-gray-900 rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-6 text-center">
-            <div className="bg-green-900 rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mx-auto mb-3 md:mb-4">
-              <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
+          <div className="frosted-card flex h-full flex-col rounded-[32px] p-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl bg-white/10 p-3">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Join</p>
+                <h3 className="text-xl font-semibold">Enter an invite code</h3>
+              </div>
             </div>
-            <h3 className="text-base md:text-lg font-semibold text-white mb-2 md:mb-3 font-sf-pro">
-              Join Room
-            </h3>
-            <p className="text-gray-300 mb-3 md:mb-4 font-sf-pro-text text-xs md:text-sm">
-              Enter a room code and PIN to join an existing conversation
-            </p>
-            <Button 
+            <div className="mt-3 flex flex-1 flex-col text-sm text-slate-300">
+              <p>Drop in the code plus PIN and we snap you back into the right room with synced context.</p>
+            </div>
+            <Button
               variant="secondary"
+              size="lg"
+              className="mt-6 w-full"
               onClick={() => {
                 resetJoinForm();
                 setShowJoinModal(true);
               }}
-              className="w-full text-sm"
             >
-              Join Existing Room
+              Join existing room
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Create Room Modal */}
+      </main>
+
       <Modal 
         isOpen={showCreateModal} 
         onClose={() => setShowCreateModal(false)}
@@ -311,7 +331,6 @@ const RoomManager = () => {
         </div>
       </Modal>
 
-      {/* Join Room Modal */}
       <Modal 
         isOpen={showJoinModal} 
         onClose={() => setShowJoinModal(false)}
@@ -374,72 +393,78 @@ const RoomManager = () => {
         </div>
       </Modal>
 
-      {/* Room Created Success Modal */}
       <Modal 
         isOpen={showSuccessModal} 
         onClose={() => setShowSuccessModal(false)}
         title="Room Created Successfully!"
       >
-        <div className="text-center space-y-6">
-          <div className="bg-green-500/20 backdrop-blur-sm rounded-full w-16 h-16 flex items-center justify-center mx-auto border border-white/10">
-            <Check className="w-8 h-8 text-white" />
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-2">
-              "{createdRoomName}" is ready!
-            </h3>
-            <p className="text-gray-300/80 text-sm">
-              Share this room code with your friends to invite them
-            </p>
+        <div className="space-y-6">
+          <div className="rounded-[28px] border border-white/10 bg-gradient-to-b from-[#0a1d3c]/80 via-[#050e21]/70 to-transparent p-6 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-sky-500/20">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-sky-500 text-slate-950">
+                <Check className="h-8 w-8" />
+              </div>
+            </div>
+            <p className="mt-5 text-xs uppercase tracking-[0.45em] text-sky-200">Room online</p>
+            <h3 className="mt-3 text-2xl font-semibold text-white">"{createdRoomName}" is ready.</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-300">Send the code below to instantly sync friends into your new space.</p>
           </div>
 
-          <div className="backdrop-blur-md bg-white/10 rounded-xl p-4 border border-white/10">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Room Code
-            </label>
-            <div className="flex items-center space-x-2">
-              <Input
-                type="text"
-                value={createdRoomCode}
-                onChange={() => {}} // dummy function for readOnly input
-                readOnly
-                className="text-center font-mono text-lg font-semibold tracking-widest"
-              />
-              <Button
-                variant="secondary"
+          <div className="rounded-[28px] border border-white/10 bg-black/35 p-5">
+            <div className="flex flex-col gap-1 text-[11px] uppercase tracking-[0.5em] text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+              <span>Room code</span>
+              {copied ? (
+                <span className="flex items-center gap-1 text-sky-300">
+                  <Check className="h-3 w-3" /> Copied
+                </span>
+              ) : (
+                <span className="text-slate-500">Share securely</span>
+              )}
+            </div>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex h-14 flex-1 items-center justify-center rounded-2xl border border-white/15 bg-gradient-to-r from-[#071830]/90 via-[#041025]/80 to-[#020812]/70 px-4 font-mono text-2xl tracking-[0.55em] text-white">
+                {createdRoomCode || '--------'}
+              </div>
+              <button
+                type="button"
                 onClick={copyRoomCode}
-                className="px-3 py-2"
+                className={`flex h-14 min-w-[140px] items-center justify-center rounded-2xl border px-6 text-sm font-semibold transition ${
+                  copied
+                    ? 'border-sky-400/60 bg-sky-500/10 text-sky-200'
+                    : 'border-white/15 bg-[#08142c]/80 text-white hover:bg-[#0d1c3c]/80'
+                }`}
+                aria-label="Copy room code"
               >
                 {copied ? (
-                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="flex items-center gap-2">
+                    <Check className="h-4 w-4" /> Copied
+                  </span>
                 ) : (
-                  <Copy className="w-4 h-4" />
+                  <span className="flex items-center gap-2">
+                    <Copy className="h-4 w-4" /> Copy code
+                  </span>
                 )}
-              </Button>
+              </button>
             </div>
-            {copied && (
-              <p className="text-green-400 text-xs mt-2 flex items-center justify-center">
-                <Check className="w-3 h-3 mr-1" />
-                Copied to clipboard!
-              </p>
-            )}
           </div>
 
-          <div className="flex space-x-3 pt-4">
-            <Button
-              variant="secondary"
-              onClick={resetSuccessModal}
-              className="flex-1"
-            >
-              Create Another
-            </Button>
-            <Button
-              onClick={joinCreatedRoom}
-              className="flex-1"
-            >
-              Enter Room
-            </Button>
+          <div className="rounded-[28px] border border-white/10 bg-[#07142b]/85 p-5 text-center">
+            <p className="text-sm text-slate-300">Room pins auto-reset when everyone leaves. Jump in now or spin another private space.</p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Button
+                variant="secondary"
+                onClick={resetSuccessModal}
+                className="flex-1"
+              >
+                Create another
+              </Button>
+              <Button
+                onClick={joinCreatedRoom}
+                className="flex-1"
+              >
+                Enter room
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>
