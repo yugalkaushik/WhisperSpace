@@ -2,6 +2,8 @@ import express from 'express';
 import passport from 'passport';
 import { authenticateToken } from '../middleware/auth';
 import {
+  register,
+  login,
   logout,
   getProfile,
   googleCallback,
@@ -14,6 +16,10 @@ const router = express.Router();
 router.get('/test', (req, res) => {
   res.json({ message: 'Auth routes are working', timestamp: new Date().toISOString() });
 });
+
+// Registration and login routes
+router.post('/register', register as any);
+router.post('/login', login as any);
 
 // Google OAuth routes
 router.get('/google',
@@ -36,5 +42,7 @@ router.put('/profile', authenticateToken as any, updateProfile as any);
 
 // Logout route
 router.post('/logout', authenticateToken as any, logout as any);
+
+
 
 export default router;

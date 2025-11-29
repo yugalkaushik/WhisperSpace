@@ -7,6 +7,18 @@ const generateToken = (userId: string): string => {
   return jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '7d' });
 };
 
+const getClientBaseUrl = () => {
+  if (process.env.CLIENT_URL && process.env.CLIENT_URL.trim().length > 0) {
+    return process.env.CLIENT_URL;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://whisperspacee.vercel.app';
+  }
+
+  return 'http://localhost:5173';
+};
+
 export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
@@ -146,12 +158,14 @@ export const googleCallback = async (req: Request, res: Response) => {
     console.log('Google callback triggered');
     console.log('req.user:', req.user);
     console.log('CLIENT_URL:', process.env.CLIENT_URL);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
     
     const user = req.user as any;
     
     if (!user) {
       console.log('No user found in callback');
-      const redirectUrl = `${process.env.CLIENT_URL}/login?error=auth_failed`;
+      const baseUrl = getClientBaseUrl();
+      const redirectUrl = `${baseUrl}/login?error=auth_failed`;
       console.log('Redirecting to (no user):', redirectUrl);
       return res.redirect(redirectUrl);
     }
@@ -166,14 +180,19 @@ export const googleCallback = async (req: Request, res: Response) => {
     // Generate token
     const token = generateToken(user._id.toString());
     
-    const redirectUrl = `${process.env.CLIENT_URL}/auth/callback?token=${token}`;
+    // Use localhost for development, production URL for production
+    const baseUrl = getClientBaseUrl();
+
+    const redirectUrl = `${baseUrl}/auth/callback?token=${token}`;
+
     console.log('Redirecting to (success):', redirectUrl);
     
-    // Redirect to frontend with token
+    // Redirect back to frontend callback handler with token
     res.redirect(redirectUrl);
   } catch (error) {
     console.error('Google callback error:', error);
-    const redirectUrl = `${process.env.CLIENT_URL}/login?error=server_error`;
+    const baseUrl = getClientBaseUrl();
+    const redirectUrl = `${baseUrl}/login?error=server_error`;
     console.log('Redirecting to (error):', redirectUrl);
     res.redirect(redirectUrl);
   }

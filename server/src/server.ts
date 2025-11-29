@@ -2,13 +2,14 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import cors from 'cors';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
 // Import configurations
 import connectDB from './config/database';
@@ -21,10 +22,59 @@ import roomRoutes from './routes/rooms';
 
 // Import models
 import { User } from './models/User';
+import { Room, IRoom } from './models/Room';
 
 
 // Import services
 import { roomCleanupService } from './services/roomCleanup';
+
+const normalizeRoomCode = (code?: string) => (code || '').trim().toUpperCase();
+
+const updateRoomMembership = async (roomCode: string, userId: string, action: 'add' | 'remove'): Promise<IRoom | null> => {
+  const normalized = normalizeRoomCode(roomCode);
+  if (!normalized || !userId) {
+    return null;
+  }
+
+  try {
+    if (action === 'add') {
+      return await Room.findOneAndUpdate(
+        { code: normalized },
+        {
+          $addToSet: { members: userId },
+          $set: { isActive: true, emptyAt: null }
+        },
+        { new: true }
+      );
+    }
+
+    return await Room.findOneAndUpdate(
+      { code: normalized },
+      { $pull: { members: userId } },
+      { new: true }
+    );
+  } catch (error) {
+    console.error(`Error updating membership for room ${normalized}:`, error);
+    return null;
+  }
+};
+
+const deleteRoomIfEmpty = async (roomCode: string, candidateRoom?: IRoom | null) => {
+  const normalized = normalizeRoomCode(roomCode);
+  if (!normalized) {
+    return;
+  }
+
+  try {
+    const roomDoc = candidateRoom ?? await Room.findOne({ code: normalized });
+    if (roomDoc && roomDoc.members.length === 0) {
+      await Room.deleteOne({ _id: roomDoc._id });
+      console.log(`🗑️  Deleted room ${normalized} immediately (no members remain)`);
+    }
+  } catch (error) {
+    console.error(`Error deleting empty room ${normalized}:`, error);
+  }
+};
 
 const app = express();
 const server = createServer(app);
@@ -48,6 +98,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Session middleware
@@ -75,7 +126,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 
 // Admin endpoints for room cleanup
-app.get('/api/admin/cleanup/stats', async (req, res) => {
+app.get('/api/admin/cleanup/stats', async (req: any, res: any) => {
   try {
     const stats = await roomCleanupService.getCleanupStats();
     res.json(stats);
@@ -85,7 +136,7 @@ app.get('/api/admin/cleanup/stats', async (req, res) => {
   }
 });
 
-app.post('/api/admin/cleanup/manual', async (req, res) => {
+app.post('/api/admin/cleanup/manual', async (req: any, res: any) => {
   try {
     const result = await roomCleanupService.manualCleanup();
     res.json({
@@ -98,13 +149,54 @@ app.post('/api/admin/cleanup/manual', async (req, res) => {
   }
 });
 
+// Test endpoint to manually mark a room as empty (for testing)
+app.post('/api/admin/rooms/:roomCode/mark-empty', async (req: any, res: any) => {
+  try {
+    const { roomCode } = req.params;
+    const result = await Room.findOneAndUpdate(
+      { code: roomCode.toUpperCase() },
+      { 
+        emptyAt: new Date(),
+        isActive: false 
+      },
+      { new: true }
+    );
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+    
+    res.json({ 
+      message: `Room ${roomCode} marked as empty`,
+      room: result 
+    });
+  } catch (error) {
+    console.error('Error marking room as empty:', error);
+    res.status(500).json({ error: 'Failed to mark room as empty' });
+  }
+});
+
+// Admin endpoint to delete all rooms (for testing)
+app.delete('/api/admin/rooms/all', async (req: any, res: any) => {
+  try {
+    const result = await Room.deleteMany({});
+    res.json({ 
+      message: `Deleted all rooms`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('Error deleting all rooms:', error);
+    res.status(500).json({ error: 'Failed to delete all rooms' });
+  }
+});
+
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (req: any, res: any) => {
   res.json({ status: 'OK', message: 'ChatFlow server is running' });
 });
 
 // Root endpoint to show server is running
-app.get('/', (req, res) => {
+app.get('/', (req: any, res: any) => {
   res.json({ 
     message: 'WhisperSpace Backend Server is Running! 🚀',
     status: 'online',
@@ -130,22 +222,29 @@ interface AuthenticatedSocket extends Socket {
 
 io.use(async (socket: any, next) => {
   try {
+    console.log('🔐 Socket authentication attempt');
     const token = socket.handshake.auth.token;
+    
     if (!token) {
+      console.log('❌ No token provided in socket auth');
       return next(new Error('Authentication error'));
     }
 
+    console.log('🔑 Token received, verifying...');
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
     const user = await User.findById(decoded.userId);
 
     if (!user) {
+      console.log('❌ User not found for token');
       return next(new Error('User not found'));
     }
 
     socket.userId = (user._id as any).toString();
     socket.username = user.username;
+    console.log(`✅ Socket authenticated for user: ${user.username} (${socket.userId})`);
     next();
   } catch (error) {
+    console.log('❌ Socket authentication error:', error);
     next(new Error('Authentication error'));
   }
 });
@@ -159,14 +258,14 @@ const onlineUsers = new Map<string, {
 }>();
 
 io.on('connection', async (socket: any) => {
-  // User connected
+  console.log(`🔌 User ${socket.username} (${socket.userId}) connected!`);
 
-  // Add user to online users
+  // Add user to online users (without auto-joining any room)
   onlineUsers.set(socket.userId, {
     socketId: socket.id,
     username: socket.username,
     userId: socket.userId,
-    rooms: new Set(['general'])
+    rooms: new Set() // Start with no rooms
   });
 
   // Update user status in database
@@ -175,48 +274,58 @@ io.on('connection', async (socket: any) => {
     lastSeen: new Date()
   });
 
-  // Join general room by default
-  socket.join('general');
+  console.log(`User ${socket.username} connected (no auto-room join)`);
 
-  // Broadcast updated online users list to general room
-  const generalUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has('general'));
-  io.to('general').emit('users_online', generalUsers);
+  // Don't auto-join any room - let users explicitly join rooms
+  // Users will join specific rooms when they create/join them
 
   // Handle joining rooms
-  socket.on('join_room', (room: string) => {
-    console.log(`User ${socket.username} (${socket.userId}) joining room: ${room}`);
-    socket.join(room);
+  socket.on('join_room', async (room: string) => {
+    const normalizedRoom = normalizeRoomCode(room);
+    if (!normalizedRoom) {
+      socket.emit('error', { message: 'Room code is required' });
+      return;
+    }
+
+    console.log(`User ${socket.username} (${socket.userId}) joining room: ${normalizedRoom}`);
+    socket.join(normalizedRoom);
     
-    // Update user's room list
     const user = onlineUsers.get(socket.userId);
     if (user) {
-      user.rooms.add(room);
+      user.rooms.add(normalizedRoom);
       console.log(`User ${socket.username} now in rooms:`, Array.from(user.rooms));
     }
+
+    await updateRoomMembership(normalizedRoom, socket.userId, 'add');
+    socket.emit('joined_room', normalizedRoom);
     
-    socket.emit('joined_room', room);
-    
-    // Emit room-specific online users
-    const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(room));
-    console.log(`Room ${room} now has ${roomUsers.length} users`);
-    io.to(room).emit('users_online', roomUsers);
+    const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(normalizedRoom));
+    console.log(`Room ${normalizedRoom} now has ${roomUsers.length} users`);
+    io.to(normalizedRoom).emit('users_online', roomUsers);
   });
 
   // Handle leaving rooms
-  socket.on('leave_room', (room: string) => {
-    socket.leave(room);
+  socket.on('leave_room', async (room: string) => {
+    const normalizedRoom = normalizeRoomCode(room);
+    if (!normalizedRoom) {
+      return;
+    }
+
+    console.log(`User ${socket.username} leaving room: ${normalizedRoom}`);
+    socket.leave(normalizedRoom);
     
-    // Update user's room list
     const user = onlineUsers.get(socket.userId);
     if (user) {
-      user.rooms.delete(room);
+      user.rooms.delete(normalizedRoom);
     }
     
-    socket.emit('left_room', room);
+    socket.emit('left_room', normalizedRoom);
     
-    // Emit updated online users for the room
-    const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(room));
-    io.to(room).emit('users_online', roomUsers);
+    const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(normalizedRoom));
+    io.to(normalizedRoom).emit('users_online', roomUsers);
+    
+    const updatedRoom = await updateRoomMembership(normalizedRoom, socket.userId, 'remove');
+    await deleteRoomIfEmpty(normalizedRoom, updatedRoom);
   });
 
   // Handle sending messages
@@ -227,11 +336,19 @@ io.on('connection', async (socket: any) => {
   }) => {
     try {
       const { content, room, messageType = 'text' } = data;
+      const normalizedRoom = normalizeRoomCode(room);
       
-      console.log(`Message from ${socket.username} in room ${room}: ${content}`);
+      console.log(`📩 Message received from ${socket.username} (${socket.userId}) in room ${normalizedRoom}`);
 
       if (!content || !content.trim()) {
+        console.log('❌ Message rejected: empty content');
         socket.emit('error', { message: 'Message content is required' });
+        return;
+      }
+
+      if (!normalizedRoom) {
+        console.log('❌ Message rejected: no room specified');
+        socket.emit('error', { message: 'Room is required' });
         return;
       }
 
@@ -244,31 +361,43 @@ io.on('connection', async (socket: any) => {
           username: socket.username,
           isOnline: true
         },
-        room,
+        room: normalizedRoom,
         messageType,
         createdAt: new Date(),
         isEdited: false
       };
 
+      console.log(`📤 Broadcasting realtime message to room ${normalizedRoom}`);
+      
       // Emit message to all users in the room (ephemeral, real-time only)
-      io.to(room).emit('new_message', messageData);
+      io.to(normalizedRoom).emit('new_message', messageData);
 
     } catch (error) {
-      console.error('Send message error:', error);
+      console.error('❌ Send message error:', error);
       socket.emit('error', { message: 'Failed to send message' });
     }
   });
 
   // Handle typing indicators
   socket.on('typing_start', (data: { room: string }) => {
-    socket.to(data.room).emit('user_typing', {
+    const normalizedRoom = normalizeRoomCode(data.room);
+    if (!normalizedRoom) {
+      return;
+    }
+
+    socket.to(normalizedRoom).emit('user_typing', {
       username: socket.username,
       userId: socket.userId
     });
   });
 
   socket.on('typing_stop', (data: { room: string }) => {
-    socket.to(data.room).emit('user_stop_typing', {
+    const normalizedRoom = normalizeRoomCode(data.room);
+    if (!normalizedRoom) {
+      return;
+    }
+
+    socket.to(normalizedRoom).emit('user_stop_typing', {
       username: socket.username,
       userId: socket.userId
     });
@@ -280,7 +409,7 @@ io.on('connection', async (socket: any) => {
 
   // Handle disconnect
   socket.on('disconnect', async () => {
-    // User disconnected
+    console.log(`User ${socket.username} disconnected`);
 
     // Get user's rooms before removing
     const user = onlineUsers.get(socket.userId);
@@ -296,10 +425,14 @@ io.on('connection', async (socket: any) => {
     });
 
     // Broadcast updated online users list to all rooms the user was in
-    userRooms.forEach(room => {
+    // and check if any rooms are now empty
+    for (const room of userRooms) {
       const roomUsers = Array.from(onlineUsers.values()).filter(u => u.rooms.has(room));
       io.to(room).emit('users_online', roomUsers);
-    });
+
+      const updatedRoom = await updateRoomMembership(room, socket.userId, 'remove');
+      await deleteRoomIfEmpty(room, updatedRoom);
+    }
   });
 });
 

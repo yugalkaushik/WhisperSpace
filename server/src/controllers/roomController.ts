@@ -154,21 +154,15 @@ export const leaveRoom = async (req: Request, res: Response) => {
     // Remove user from room
     room.members = room.members.filter((member: any) => member.toString() !== userId);
     
-    // If room is empty, mark the time it became empty
-    if (room.members.length === 0) {
-      room.emptyAt = new Date();
-      console.log(`Room ${room.code} is now empty, marked for deletion in 1 hour`);
-    }
-    
     // If creator left and room is not empty, transfer ownership to first member
     if (room.creator.toString() === userId && room.members.length > 0) {
       room.creator = room.members[0];
       console.log(`Room ${room.code} ownership transferred to ${room.members[0]}`);
     }
     
-    // Only deactivate if empty (we'll let the cleanup job delete it later)
     if (room.members.length === 0) {
-      room.isActive = false;
+      await room.deleteOne();
+      return res.json({ message: 'Room deleted because everyone left' });
     }
 
     await room.save();

@@ -8,6 +8,7 @@ export interface IRoom extends Document {
   members: mongoose.Types.ObjectId[];
   isActive: boolean;
   emptyAt?: Date; // Track when the room became empty
+  lastMessageAt?: Date; // Track when the last message was sent
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,6 +46,10 @@ const roomSchema = new Schema<IRoom>({
     default: true
   },
   emptyAt: {
+    type: Date,
+    default: null
+  },
+  lastMessageAt: {
     type: Date,
     default: null
   }

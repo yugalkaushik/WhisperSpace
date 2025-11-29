@@ -3,7 +3,7 @@ import { Room } from '../models/Room';
 export class RoomCleanupService {
   private cleanupInterval: NodeJS.Timeout | null = null;
   private readonly CLEANUP_INTERVAL_MS = 15 * 60 * 1000; // Check every 15 minutes
-  private readonly ROOM_DELETION_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
+  private readonly ROOM_DELETION_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour of no messages
 
   /**
    * Start the automatic room cleanup service
@@ -39,21 +39,47 @@ export class RoomCleanupService {
   }
 
   /**
-   * Run the cleanup process to delete old empty rooms
+   * Run the cleanup process to delete old inactive rooms
    */
   private async runCleanup(): Promise<void> {
     try {
+      console.log('🧹 Running room cleanup check...');
+      
       const now = new Date();
       const thresholdTime = new Date(now.getTime() - this.ROOM_DELETION_THRESHOLD_MS);
 
-      // Find rooms that have been empty for more than 1 hour
+      // Find rooms that have not had messages for more than 1 hour
+      // OR rooms that have been explicitly marked as empty for more than the threshold
       const roomsToDelete = await Room.find({
-        emptyAt: { $ne: null, $lt: thresholdTime },
-        isActive: false
+        $or: [
+          // Rooms with no messages for more than 1 hour
+          {
+            $or: [
+              { lastMessageAt: { $lt: thresholdTime } },
+              { lastMessageAt: { $exists: false }, createdAt: { $lt: thresholdTime } }
+            ]
+          },
+          // Legacy: rooms marked as empty for more than threshold
+          {
+            emptyAt: { $ne: null, $lt: thresholdTime },
+            isActive: false
+          }
+        ]
+      });
+
+      // Also check all rooms for debugging
+      const allRooms = await Room.find({});
+      console.log(`📊 Room status: ${allRooms.length} total rooms, ${roomsToDelete.length} to delete`);
+      
+      allRooms.forEach(room => {
+        const lastActivity = room.lastMessageAt || room.createdAt;
+        const timeSinceActivity = now.getTime() - lastActivity.getTime();
+        const minutesSinceActivity = Math.floor(timeSinceActivity / (1000 * 60));
+        console.log(`📋 Room ${room.code} (${room.name}): last activity ${minutesSinceActivity}min ago, active=${room.isActive}`);
       });
 
       if (roomsToDelete.length === 0) {
-        // No rooms to delete
+        console.log('✅ No rooms to delete');
         return;
       }
 
@@ -61,10 +87,11 @@ export class RoomCleanupService {
 
       for (const room of roomsToDelete) {
         try {
-          // Delete the room (messages are ephemeral, no need to delete them)
+          // Delete the room
           await Room.findByIdAndDelete(room._id);
 
-          console.log(`🗑️  Deleted room "${room.name}" (${room.code}) - was empty since ${room.emptyAt}`);
+          const lastActivity = room.lastMessageAt || room.createdAt;
+          console.log(`🗑️  Deleted room "${room.name}" (${room.code}) - last activity: ${lastActivity}`);
         } catch (error) {
           console.error(`❌ Failed to delete room ${room.code}:`, error);
         }
