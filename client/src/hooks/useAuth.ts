@@ -4,6 +4,7 @@ import { useLocalStorage } from './useLocalStorage';
 import { useProfile } from './useProfile';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
+import { loginWithEmail, registerWithEmail } from '../services/api';
 
 export const useAuth = () => {
   const [user, setUser] = useLocalStorage<User | null>('chatflow_user', null);
@@ -62,12 +63,36 @@ export const useAuth = () => {
     setLoading(false);
   };
 
-  const login = async () => {
-    setError('Please use Google Sign-In');
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await loginWithEmail({ email, password });
+      setAuthData(response.data.user, response.data.token);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const register = async () => {
-    setError('Please use Google Sign-In');
+  const register = async (username: string, email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await registerWithEmail({ username, email, password });
+      setAuthData(response.data.user, response.data.token);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {

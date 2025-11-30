@@ -1,4 +1,5 @@
 import GoogleAuthButton from '../components/auth/GoogleAuthButton';
+import EmailAuthForm from '../components/auth/EmailAuthForm';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -60,7 +61,7 @@ const Login = () => {
             <header className="space-y-3 text-center">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Sign in</p>
               <h2 className="text-2xl font-semibold text-white">Join your private room</h2>
-              <p className="text-sm text-slate-400">Authenticate with Google to sync your rooms and profile.</p>
+              <p className="text-sm text-slate-400">Sign in with email or authenticate with Google to sync your rooms and profile.</p>
             </header>
 
             {authError && (
@@ -69,6 +70,20 @@ const Login = () => {
               </div>
             )}
 
+            {/* Email Authentication Form */}
+            <EmailAuthForm />
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[rgba(15,23,42,0.75)] px-2 text-slate-400">Or continue with</span>
+              </div>
+            </div>
+
+            {/* Google OAuth Button */}
             <GoogleAuthButton />
 
             <footer className="pt-2 text-center border-t border-white/5">

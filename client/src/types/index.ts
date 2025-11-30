@@ -6,6 +6,7 @@ export interface User {
   email: string;
   avatar?: string;
   googleId?: string;
+  isEmailVerified?: boolean;
   isOnline: boolean;
   lastSeen: Date;
   token?: string; // For client-side auth state
@@ -66,8 +67,8 @@ export interface TypingUser {
 export interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: () => Promise<void>;
-  register: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   error: string | null;
   loading: boolean;

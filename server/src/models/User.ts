@@ -7,6 +7,7 @@ export interface IUser extends Document {
   password?: string;
   avatar?: string;
   googleId?: string;
+  isEmailVerified: boolean;
   isOnline: boolean;
   lastSeen: Date;
   createdAt: Date;
@@ -39,6 +40,10 @@ const userSchema = new Schema<IUser>({
   googleId: {
     type: String,
     sparse: true
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
   },
   isOnline: {
     type: Boolean,

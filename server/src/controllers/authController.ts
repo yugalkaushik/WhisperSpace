@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
+import { OTP } from '../models/OTP';
 import { AuthRequest } from '../middleware/auth';
 import { getClientBaseUrl } from '../utils/env';
+import { generateOTP, sendOTPEmail } from '../services/emailService';
+import bcrypt from 'bcryptjs';
 
 const generateToken = (userId: string): string => {
   return jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: '7d' });
@@ -223,5 +226,185 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Send OTP for email verification
+export const sendOTP = async (req: Request, res: Response) => {
+  try {
+    const { email, purpose } = req.body;
+
+    if (!email || !purpose) {
+      return res.status(400).json({ message: 'Email and purpose are required' });
+    }
+
+    if (!['registration', 'login'].includes(purpose)) {
+      return res.status(400).json({ message: 'Invalid purpose' });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+
+    if (purpose === 'registration' && existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    if (purpose === 'login' && !existingUser) {
+      return res.status(400).json({ message: 'No account found with this email' });
+    }
+
+    // Delete any existing OTPs for this email and purpose
+    await OTP.deleteMany({ email, purpose });
+
+    // Generate and save new OTP
+    const otpCode = generateOTP();
+    const hashedOTP = await bcrypt.hash(otpCode, 10);
+    
+    const otp = new OTP({
+      email,
+      otp: hashedOTP,
+      purpose,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+    });
+
+    await otp.save();
+
+    // Send OTP email
+    const emailSent = await sendOTPEmail(email, otpCode, purpose);
+
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send OTP email' });
+    }
+
+    res.json({ 
+      message: 'OTP sent successfully',
+      expiresIn: 600 // seconds
+    });
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    res.status(500).json({ message: 'Server error sending OTP' });
+  }
+};
+
+// Verify OTP and complete registration/login
+export const verifyOTP = async (req: Request, res: Response) => {
+  try {
+    const { email, otp, purpose, username, password } = req.body;
+
+    if (!email || !otp || !purpose) {
+      return res.status(400).json({ message: 'Email, OTP, and purpose are required' });
+    }
+
+    // Find the OTP record
+    const otpRecord = await OTP.findOne({ 
+      email, 
+      purpose,
+      expiresAt: { $gt: new Date() }
+    }).sort({ createdAt: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // Check attempts
+    if (otpRecord.attempts >= 5) {
+      await OTP.deleteMany({ email, purpose });
+      return res.status(400).json({ message: 'Too many failed attempts. Please request a new OTP' });
+    }
+
+    // Verify OTP
+    const isValidOTP = await bcrypt.compare(otp, otpRecord.otp);
+
+    if (!isValidOTP) {
+      otpRecord.attempts += 1;
+      await otpRecord.save();
+      return res.status(400).json({ 
+        message: 'Invalid OTP',
+        attemptsLeft: 5 - otpRecord.attempts
+      });
+    }
+
+    // OTP is valid - delete all OTPs for this email
+    await OTP.deleteMany({ email, purpose });
+
+    if (purpose === 'registration') {
+      // Validate registration data
+      if (!username || !password) {
+        return res.status(400).json({ message: 'Username and password are required for registration' });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters' });
+      }
+
+      // Create new user with verified email
+      const user = new User({
+        username,
+        email,
+        password,
+        isEmailVerified: true
+      });
+
+      await user.save();
+
+      // Generate token
+      const token = generateToken((user._id as any).toString());
+
+      res.status(201).json({
+        message: 'Registration successful',
+        token,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar,
+          isEmailVerified: user.isEmailVerified,
+          isOnline: user.isOnline
+        }
+      });
+    } else {
+      // Login
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+
+      // Mark email as verified if not already
+      if (!user.isEmailVerified) {
+        user.isEmailVerified = true;
+        await user.save();
+      }
+
+      // Update user status
+      user.isOnline = true;
+      user.lastSeen = new Date();
+      await user.save();
+
+      // Generate token
+      const token = generateToken((user._id as any).toString());
+
+      res.json({
+        message: 'Login successful',
+        token,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar,
+          isEmailVerified: user.isEmailVerified,
+          isOnline: user.isOnline
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ message: 'Server error verifying OTP' });
   }
 };

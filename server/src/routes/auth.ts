@@ -7,7 +7,9 @@ import {
   logout,
   getProfile,
   googleCallback,
-  updateProfile
+  updateProfile,
+  sendOTP,
+  verifyOTP
 } from '../controllers/authController';
 import { getClientBaseUrl } from '../utils/env';
 
@@ -22,6 +24,10 @@ router.get('/test', (req, res) => {
 // Registration and login routes
 router.post('/register', register as any);
 router.post('/login', login as any);
+
+// OTP routes
+router.post('/send-otp', sendOTP as any);
+router.post('/verify-otp', verifyOTP as any);
 
 // Google OAuth routes
 router.get('/google',

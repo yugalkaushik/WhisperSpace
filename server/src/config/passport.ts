@@ -30,6 +30,7 @@ passport.use(
           // Link Google account to existing user
           user.googleId = profile.id;
           user.avatar = user.avatar || profile.photos?.[0]?.value || '';
+          user.isEmailVerified = true; // Mark as verified when linking Google
           await user.save();
           return done(null, user);
         }
@@ -39,7 +40,8 @@ passport.use(
           googleId: profile.id,
           username: profile.displayName || profile.emails?.[0]?.value.split('@')[0],
           email: profile.emails?.[0]?.value,
-          avatar: profile.photos?.[0]?.value || ''
+          avatar: profile.photos?.[0]?.value || '',
+          isEmailVerified: true // Google OAuth users are pre-verified
         });
 
         await newUser.save();

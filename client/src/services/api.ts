@@ -17,6 +17,18 @@ api.interceptors.request.use((config) => {
 // Auth endpoints
 export const verifyToken = () => api.get<{ user: User }>('/auth/profile');
 
+export const loginWithEmail = (data: { email: string; password: string }) =>
+  api.post<{ message: string; token: string; user: User }>('/auth/login', data);
+
+export const registerWithEmail = (data: { username: string; email: string; password: string }) =>
+  api.post<{ message: string; token: string; user: User }>('/auth/register', data);
+
+export const sendOTP = (data: { email: string; purpose: 'registration' | 'login' }) =>
+  api.post<{ message: string; expiresIn: number }>('/auth/send-otp', data);
+
+export const verifyOTP = (data: { email: string; otp: string; purpose: 'registration' | 'login'; username?: string; password?: string }) =>
+  api.post<{ message: string; token: string; user: User }>('/auth/verify-otp', data);
+
 // Room endpoints
 export const createRoom = (data: { name: string; pin: string }) =>
   api.post<{ message: string; roomCode: string; roomName: string }>('/rooms/create', data);
