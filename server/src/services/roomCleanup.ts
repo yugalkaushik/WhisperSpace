@@ -2,8 +2,9 @@ import { Room } from '../models/Room';
 
 export class RoomCleanupService {
   private cleanupInterval: NodeJS.Timeout | null = null;
-  private readonly CLEANUP_INTERVAL_MS = 15 * 60 * 1000; // Check every 15 minutes
-  private readonly ROOM_DELETION_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour of no messages
+  private readonly CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // Check every 5 minutes
+  private readonly EMPTY_ROOM_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes for empty rooms
+  private readonly INACTIVE_ROOM_THRESHOLD_MS = 12 * 60 * 60 * 1000; // 12 hours for rooms with members but no messages
 
   /**
    * Start the automatic room cleanup service
@@ -19,12 +20,12 @@ export class RoomCleanupService {
     // Run cleanup immediately on start
     this.runCleanup();
     
-    // Then run cleanup every 15 minutes
+    // Then run cleanup every 5 minutes
     this.cleanupInterval = setInterval(() => {
       this.runCleanup();
     }, this.CLEANUP_INTERVAL_MS);
 
-    console.log(`✅ Room cleanup service started (checks every ${this.CLEANUP_INTERVAL_MS / 1000 / 60} minutes)`);
+    console.log(`✅ Room cleanup service started (empty rooms: 10min, inactive rooms: 12hrs)`);
   }
 
   /**
@@ -46,22 +47,33 @@ export class RoomCleanupService {
       console.log('🧹 Running room cleanup check...');
       
       const now = new Date();
-      const thresholdTime = new Date(now.getTime() - this.ROOM_DELETION_THRESHOLD_MS);
+      const emptyRoomThreshold = new Date(now.getTime() - this.EMPTY_ROOM_THRESHOLD_MS);
+      const inactiveRoomThreshold = new Date(now.getTime() - this.INACTIVE_ROOM_THRESHOLD_MS);
 
-      // Find rooms that have not had messages for more than 1 hour
-      // OR rooms that have been explicitly marked as empty for more than the threshold
+      // Find rooms to delete based on two criteria:
+      // 1. Empty rooms (no members) - delete after 10 minutes
+      // 2. Inactive rooms (has members but no messages) - delete after 12 hours
       const roomsToDelete = await Room.find({
         $or: [
-          // Rooms with no messages for more than 1 hour
+          // Empty rooms - no members for 10 minutes
           {
+            members: { $size: 0 },
             $or: [
-              { lastMessageAt: { $lt: thresholdTime } },
-              { lastMessageAt: { $exists: false }, createdAt: { $lt: thresholdTime } }
+              { lastMessageAt: { $lt: emptyRoomThreshold } },
+              { lastMessageAt: { $exists: false }, createdAt: { $lt: emptyRoomThreshold } }
             ]
           },
-          // Legacy: rooms marked as empty for more than threshold
+          // Inactive rooms - has members but no messages for 12 hours
           {
-            emptyAt: { $ne: null, $lt: thresholdTime },
+            members: { $exists: true, $not: { $size: 0 } },
+            $or: [
+              { lastMessageAt: { $lt: inactiveRoomThreshold } },
+              { lastMessageAt: { $exists: false }, createdAt: { $lt: inactiveRoomThreshold } }
+            ]
+          },
+          // Legacy: rooms marked as empty
+          {
+            emptyAt: { $ne: null, $lt: emptyRoomThreshold },
             isActive: false
           }
         ]
@@ -75,7 +87,8 @@ export class RoomCleanupService {
         const lastActivity = room.lastMessageAt || room.createdAt;
         const timeSinceActivity = now.getTime() - lastActivity.getTime();
         const minutesSinceActivity = Math.floor(timeSinceActivity / (1000 * 60));
-        console.log(`📋 Room ${room.code} (${room.name}): last activity ${minutesSinceActivity}min ago, active=${room.isActive}`);
+        const memberCount = room.members?.length || 0;
+        console.log(`📋 Room ${room.code} (${room.name}): ${memberCount} members, last activity ${minutesSinceActivity}min ago`);
       });
 
       if (roomsToDelete.length === 0) {
@@ -116,11 +129,30 @@ export class RoomCleanupService {
 
     try {
       const now = new Date();
-      const thresholdTime = new Date(now.getTime() - this.ROOM_DELETION_THRESHOLD_MS);
+      const emptyRoomThreshold = new Date(now.getTime() - this.EMPTY_ROOM_THRESHOLD_MS);
+      const inactiveRoomThreshold = new Date(now.getTime() - this.INACTIVE_ROOM_THRESHOLD_MS);
 
       const roomsToDelete = await Room.find({
-        emptyAt: { $ne: null, $lt: thresholdTime },
-        isActive: false
+        $or: [
+          {
+            members: { $size: 0 },
+            $or: [
+              { lastMessageAt: { $lt: emptyRoomThreshold } },
+              { lastMessageAt: { $exists: false }, createdAt: { $lt: emptyRoomThreshold } }
+            ]
+          },
+          {
+            members: { $exists: true, $not: { $size: 0 } },
+            $or: [
+              { lastMessageAt: { $lt: inactiveRoomThreshold } },
+              { lastMessageAt: { $exists: false }, createdAt: { $lt: inactiveRoomThreshold } }
+            ]
+          },
+          {
+            emptyAt: { $ne: null, $lt: emptyRoomThreshold },
+            isActive: false
+          }
+        ]
       });
 
       for (const room of roomsToDelete) {
@@ -150,30 +182,52 @@ export class RoomCleanupService {
   async getCleanupStats(): Promise<{
     totalRooms: number;
     emptyRooms: number;
+    inactiveRooms: number;
     roomsToDelete: number;
-    roomsPendingDeletion: number;
   }> {
     const now = new Date();
-    const thresholdTime = new Date(now.getTime() - this.ROOM_DELETION_THRESHOLD_MS);
+    const emptyRoomThreshold = new Date(now.getTime() - this.EMPTY_ROOM_THRESHOLD_MS);
+    const inactiveRoomThreshold = new Date(now.getTime() - this.INACTIVE_ROOM_THRESHOLD_MS);
 
-    const [totalRooms, emptyRooms, roomsToDelete, roomsPendingDeletion] = await Promise.all([
+    const [totalRooms, emptyRooms, inactiveRooms, roomsToDelete] = await Promise.all([
       Room.countDocuments({}),
-      Room.countDocuments({ emptyAt: { $ne: null } }),
+      Room.countDocuments({ members: { $size: 0 } }),
       Room.countDocuments({
-        emptyAt: { $ne: null, $lt: thresholdTime },
-        isActive: false
+        members: { $exists: true, $not: { $size: 0 } },
+        $or: [
+          { lastMessageAt: { $lt: inactiveRoomThreshold } },
+          { lastMessageAt: { $exists: false }, createdAt: { $lt: inactiveRoomThreshold } }
+        ]
       }),
       Room.countDocuments({
-        emptyAt: { $ne: null, $gte: thresholdTime },
-        isActive: false
+        $or: [
+          {
+            members: { $size: 0 },
+            $or: [
+              { lastMessageAt: { $lt: emptyRoomThreshold } },
+              { lastMessageAt: { $exists: false }, createdAt: { $lt: emptyRoomThreshold } }
+            ]
+          },
+          {
+            members: { $exists: true, $not: { $size: 0 } },
+            $or: [
+              { lastMessageAt: { $lt: inactiveRoomThreshold } },
+              { lastMessageAt: { $exists: false }, createdAt: { $lt: inactiveRoomThreshold } }
+            ]
+          },
+          {
+            emptyAt: { $ne: null, $lt: emptyRoomThreshold },
+            isActive: false
+          }
+        ]
       })
     ]);
 
     return {
       totalRooms,
       emptyRooms,
-      roomsToDelete,
-      roomsPendingDeletion
+      inactiveRooms,
+      roomsToDelete
     };
   }
 }
