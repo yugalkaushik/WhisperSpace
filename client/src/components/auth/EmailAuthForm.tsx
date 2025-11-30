@@ -59,15 +59,18 @@ const EmailAuthForm = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('Sending OTP to:', formData.email);
       // Send OTP to email
-      await sendOTP({ 
+      const response = await sendOTP({ 
         email: formData.email, 
         purpose: isLoginMode ? 'login' : 'registration' 
       });
+      console.log('OTP sent successfully:', response);
       
       // Show OTP verification screen
       setShowOTPVerification(true);
     } catch (error) {
+      console.error('OTP send error:', error);
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage = axiosError.response?.data?.message || axiosError.message || 'Failed to send OTP. Please try again.';
       setFormError(errorMessage);
