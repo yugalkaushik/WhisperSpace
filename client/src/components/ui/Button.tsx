@@ -31,9 +31,9 @@ export function Button({
   };
 
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-xs rounded-xl',
-    md: 'px-4 py-2 text-sm rounded-2xl',
-    lg: 'px-5 py-3 text-base rounded-3xl'
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-5 py-3 text-base'
   };
 
   const baseClasses = `inline-flex items-center justify-center font-semibold tracking-tight transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 shadow-lg shadow-black/25 ${sizeClasses[size]}`;
@@ -52,6 +52,7 @@ export function Button({
       type={type}
       onClick={handleClick}
       disabled={disabled}
+      style={{ borderRadius: 'var(--border-radius)' }}
       className={`${baseClasses} ${variantClasses[variant]} ${disabled ? disabledClasses : ''} ${className}`.trim()}
     >
       {children}

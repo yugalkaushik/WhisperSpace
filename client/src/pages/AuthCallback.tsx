@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AuthContext } from '../contexts/auth-context';
+import { AuthContext } from '../contexts/AuthContext';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
 

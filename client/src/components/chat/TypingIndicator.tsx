@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { SocketContext } from '../../contexts/socket-context';
+import { SocketContext } from '../../contexts/SocketContext';
 
 const TypingIndicator = () => {
   const { typingUsers } = useContext(SocketContext);

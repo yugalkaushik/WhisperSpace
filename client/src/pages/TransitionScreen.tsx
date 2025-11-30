@@ -52,7 +52,7 @@ const TransitionScreen = () => {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#010613] via-[#041434] to-[#00040a] flex items-center justify-center overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="bg-gradient-to-br from-[#010613] via-[#041434] to-[#00040a] flex items-center justify-center overflow-hidden" style={{ height: '100vh', maxHeight: '100dvh' }}>
       <div className="text-center p-6 max-w-sm mx-auto">
         <div className="relative mb-6">
           <div className={`w-24 h-24 md:w-28 md:h-28 mx-auto rounded-full border-4 transition-all duration-1000 ${

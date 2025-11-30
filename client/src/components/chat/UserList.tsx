@@ -1,17 +1,17 @@
 import { useContext } from 'react';
-import { SocketContext } from '../../contexts/socket-context';
-import { AuthContext } from '../../contexts/auth-context';
+import { SocketContext } from '../../contexts/SocketContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import Avatar from '../ui/Avatar';
 import type { OnlineUser } from '../../types';
+import { X } from 'lucide-react';
 
 interface UserListProps {
-  isMobileView?: boolean;
-  isOpen?: boolean;
   onClose?: () => void;
+  isMobileSidebar?: boolean;
 }
 
-const UserList = ({ isMobileView = false, isOpen = false, onClose }: UserListProps) => {
+const UserList = ({ onClose, isMobileSidebar }: UserListProps) => {
   const { onlineUsers } = useContext(SocketContext);
   const { user } = useContext(AuthContext);
   const { profile } = useProfile();
@@ -37,28 +37,33 @@ const UserList = ({ isMobileView = false, isOpen = false, onClose }: UserListPro
   };
 
   return (
-    <div
-      className={`${
-        isMobileView
-          ? `mobile-sidebar w-64 bg-[#050505]/95 ${isOpen ? 'open' : ''}`
-          : 'hidden border-r border-white/10 bg-[#080808] md:flex md:w-60'
-      } flex-col text-white`}
-    >
-          <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400">
-          <span>Participants</span>
-          <span>{onlineUsers.length}</span>
+    <div className={`flex flex-col text-white overflow-hidden ${isMobileSidebar ? 'w-full h-full' : 'w-64 flex-shrink-0'}`}>
+      <div className="flex flex-col h-full overflow-hidden border border-white/10 bg-[#0c0c0c] p-4" style={{ borderRadius: 'var(--border-radius)' }}>
+        <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400 flex-shrink-0 pb-4">
+          <div className="flex items-center gap-2">
+            <span>Participants</span>
+            <span className="bg-white/10 px-2 py-0.5 font-semibold" style={{ borderRadius: 'var(--border-radius)' }}>{onlineUsers.length}</span>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-white/10 transition"
+              style={{ borderRadius: 'var(--border-radius)' }}
+              aria-label="Close participants"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
-            <div className="modern-scroll mt-4 space-y-2 overflow-y-auto pr-1">
+        <div className="hide-scrollbar flex-1 min-h-0 space-y-2 overflow-y-auto">
           {onlineUsers.map((onlineUser) => (
             <div
               key={onlineUser.userId}
-                  className="flex items-center gap-3 rounded-2xl border border-white/5 bg-[#0f0f0f] px-3 py-2 hover:border-white/20"
-              onClick={isMobileView ? onClose : undefined}
+              className="flex items-center gap-3 border border-white/5 bg-[#0f0f0f] px-3 py-2 hover:border-white/20"
+              style={{ borderRadius: 'var(--border-radius)' }}
             >
               <Avatar
                 username={onlineUser.username}
-                isOnline={true}
                 selectedAvatar={getSelectedAvatar(onlineUser)}
                 size="sm"
               />

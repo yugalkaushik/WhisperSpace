@@ -1,7 +1,7 @@
-import { useState, useContext, useEffect, useCallback } from 'react';
-import { SocketContext } from '../../contexts/socket-context';
+import { useState, useContext, useEffect, useCallback, useRef } from 'react';
+import { SocketContext } from '../../contexts/SocketContext';
 import Input from '../ui/Input';
-import { Smile, Navigation } from 'lucide-react';
+import { Smile, SendHorizontal } from 'lucide-react';
 import { MESSAGE_TYPES, TYPING_TIMEOUT } from '../../utils/constants';
 import EmojiPicker from 'emoji-picker-react';
 
@@ -16,6 +16,8 @@ const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { sendMessage, startTyping, stopTyping, currentRoom } = useContext(SocketContext);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   const getRoomCode = useCallback(() => {
     if (currentRoom?.code) {
@@ -51,14 +53,37 @@ const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
 
   const handleEmojiSelect = (emojiData: { emoji: string }) => {
     setMessage((prev) => prev + emojiData.emoji);
-    setShowEmojiPicker(false);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        emojiPickerRef.current && 
+        !emojiPickerRef.current.contains(event.target as Node) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
         e.preventDefault();
         setShowEmojiPicker(prev => !prev);
+      }
+      if (e.key === 'Escape' && showEmojiPicker) {
+        setShowEmojiPicker(false);
       }
     };
     
@@ -71,19 +96,21 @@ const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
         stopTyping(roomCode);
       }
     };
-  }, [typingTimeout, stopTyping, getRoomCode]);
+  }, [typingTimeout, stopTyping, getRoomCode, showEmojiPicker]);
 
   const wrapperClasses = variant === 'embedded'
-    ? 'px-4 py-4'
-    : 'border-t border-white/5 bg-[#070707] px-4 py-4';
+    ? 'relative px-3 sm:px-4 py-3 sm:py-4'
+    : 'relative bg-[#070707] px-3 sm:px-4 py-3 sm:py-4';
 
   return (
     <div className={wrapperClasses}>
-      <div className="flex items-center gap-3 rounded-3xl border border-white/10 bg-[#0f0f0f] px-3 py-2 shadow-inner shadow-black/60">
+      <div className="flex items-center gap-2 sm:gap-3 border border-white/10 bg-[#0f0f0f] px-2 sm:px-3 py-2 shadow-inner shadow-black/60" style={{ borderRadius: 'var(--border-radius)' }}>
         <button
+          ref={emojiButtonRef}
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           type="button"
-          className="rounded-2xl border border-white/10 p-2 text-slate-300 transition hover:border-white/30 hover:text-white"
+          className="border border-white/10 p-1.5 sm:p-2 text-slate-300 transition hover:border-white/30 hover:text-white"
+          style={{ borderRadius: 'var(--border-radius)' }}
           aria-label="Emoji picker"
           aria-expanded={showEmojiPicker}
           title="Insert emoji (Ctrl+E)"
@@ -116,15 +143,15 @@ const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
           disabled={!message.trim() || !getRoomCode()}
           type="button"
           aria-label="Send message"
-          className="group flex h-12 w-12 items-center justify-center rounded-2xl border border-white/15 bg-[#0a0f1c] text-white transition hover:border-white/40 hover:text-sky-200 disabled:cursor-not-allowed disabled:opacity-30"
+          className="text-blue-500 transition hover:text-blue-400 disabled:cursor-not-allowed disabled:opacity-30"
         >
-          <Navigation className="h-4 w-4 transition group-hover:translate-x-0.5" strokeWidth={2.4} />
+          <SendHorizontal className="h-5 w-5" strokeWidth={2} />
         </button>
       </div>
       {showEmojiPicker && (
-        <div className="relative" aria-live="polite">
-          <div className="absolute bottom-2 left-0 z-50 overflow-hidden rounded-2xl border border-white/10 shadow-2xl" role="dialog" aria-label="Emoji picker">
-            <EmojiPicker onEmojiClick={handleEmojiSelect} />
+        <div ref={emojiPickerRef} className="absolute bottom-16 sm:bottom-20 left-2 sm:left-4 z-50" aria-live="polite">
+          <div className="overflow-hidden border border-white/10 shadow-2xl" style={{ borderRadius: 'var(--border-radius)' }} role="dialog" aria-label="Emoji picker">
+            <EmojiPicker onEmojiClick={handleEmojiSelect} width={280} height={350} />
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import io from 'socket.io-client';
-import { AuthContext } from '../contexts/auth-context';
-import { SocketContext } from '../contexts/socket-context';
+import { AuthContext } from '../contexts/AuthContext';
+import { SocketContext } from '../contexts/SocketContext';
 import { SOCKET_URL } from '../utils/constants';
 import type { Message, OnlineUser } from '../types';
 
@@ -12,55 +12,43 @@ export const useSocket = (roomCode?: string) => {
   const normalizedRoomCode = roomCode?.toUpperCase();
 
   useEffect(() => {
-    console.log('🔌 useSocket effect triggered:', { user: !!user, token: !!token, roomCode: normalizedRoomCode });
-    
     if (user && token && normalizedRoomCode) {
-      console.log('🚀 Starting socket connection to:', SOCKET_URL);
       const socket = io(SOCKET_URL, {
         auth: { token },
       });
 
       socket.on('connect', () => {
-        console.log('✅ Socket connected successfully! Socket ID:', socket.id);
-        console.log('🏠 Room code for joining:', normalizedRoomCode);
         setSocket?.(socket);
         setSocketInstance(socket);
         
         // Clear messages to start fresh (ephemeral messages only)
         setMessages?.([]);
         
-        console.log('📥 Emitting join_room for:', normalizedRoomCode);
         socket.emit('join_room', normalizedRoomCode);
       });
 
       socket.on('users_online', (users: OnlineUser[]) => {
-        console.log('👥 Received users_online:', users);
         setOnlineUsers?.(users);
       });
 
       socket.on('new_message', (message: Message) => {
-        console.log('📨 Received new_message:', message);
         setMessages?.((prev) => [...prev, message]);
       });
 
       socket.on('user_typing', (data: { username: string; userId: string }) => {
-        console.log('⌨️  User typing:', data);
         setTypingUsers?.((prev) => [...prev.filter((u) => u.userId !== data.userId), data]);
       });
 
       socket.on('user_stop_typing', (data: { userId: string }) => {
-        console.log('⌨️  User stopped typing:', data);
         setTypingUsers?.((prev) => prev.filter((u) => u.userId !== data.userId));
       });
 
-      socket.on('joined_room', (room) => {
-        console.log('✅ Successfully joined room:', room);
+      socket.on('joined_room', () => {
         // Clear messages when joining a new room
         setMessages?.([]);
       });
 
       socket.on('left_room', () => {
-        console.log('👋 Left room successfully');
         // Clear messages and current room when leaving
         setMessages?.([]);
         setCurrentRoom?.(null);

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AuthContext } from '../contexts/auth-context';
-import { SocketContext } from '../contexts/socket-context';
+import { AuthContext } from '../contexts/AuthContext';
+import { SocketContext } from '../contexts/SocketContext';
 import ChatRoom from '../components/chat/ChatRoom';
 import { useSocket } from '../hooks/useSocket';
 

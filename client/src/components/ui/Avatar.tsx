@@ -3,23 +3,15 @@ import { getAvatarUrl } from '../../utils/avatars';
 interface AvatarProps {
   username: string;
   selectedAvatar?: string;
-  isOnline?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }
 
-const Avatar = ({ username, selectedAvatar, isOnline = false, size = 'md' }: AvatarProps) => {
+const Avatar = ({ username, selectedAvatar, size = 'md' }: AvatarProps) => {
   // Size classes mapping - made smaller
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
     lg: 'w-12 h-12',
-  };
-
-  // Online indicator size classes
-  const indicatorSizeClasses = {
-    sm: 'w-2 h-2',
-    md: 'w-3 h-3',
-    lg: 'w-4 h-4',
   };
 
   // Generate consistent avatar based on username if no selectedAvatar
@@ -69,10 +61,6 @@ const Avatar = ({ username, selectedAvatar, isOnline = false, size = 'md' }: Ava
           }}
         />
       </div>
-      {isOnline && (
-        <span className={`absolute bottom-0 right-0 ${indicatorSizeClasses[size]} bg-green-500 rounded-full
-                         shadow-md shadow-black/20 ring-2 ring-zinc-900`}></span>
-      )}
     </div>
   );
 };

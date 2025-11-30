@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/auth-context';
+import { AuthContext } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import { getAvatarUrl } from '../../utils/avatars';
 
@@ -20,14 +20,24 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ variant = 'st
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
@@ -94,38 +104,40 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ variant = 'st
   const isInline = variant === 'inline';
 
   return (
-    <div className={`relative ${isInline ? 'h-16' : ''}`}>
+    <div className={`relative ${isInline ? 'h-14 sm:h-16' : ''}`}>
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between space-x-1 px-4 text-white transition md:space-x-2 ${
+        className={`flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 text-white transition ${
           isInline
-            ? 'h-full rounded-none border-0 bg-transparent hover:bg-white/10'
-            : 'h-16 rounded-[28px] border border-white/10 bg-white/10 shadow-lg shadow-black/30 hover:bg-white/20'
+            ? 'h-full bg-transparent hover:bg-white/5'
+            : 'h-14 sm:h-16 border border-white/10 bg-[#0c0c0c] hover:bg-white/5'
         }`}
+        style={{ borderRadius: isInline ? '0' : 'var(--border-radius)' }}
         aria-label="User menu"
       >
-        <div className="relative">
-          <div className="h-8 w-8 overflow-hidden rounded-full md:h-10 md:w-10">
-            <img 
-              src={getAvatarUrl(profile.selectedAvatar || `avatar${displayName.charCodeAt(0) % 12 + 1}`, displayName)}
-              alt={displayName}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <div className="relative flex-shrink-0">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 overflow-hidden" style={{ borderRadius: '50%' }}>
+              <img 
+                src={getAvatarUrl(profile.selectedAvatar || `avatar${displayName.charCodeAt(0) % 12 + 1}`, displayName)}
+                alt={displayName}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
           </div>
-          <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-green-500 ring-1 ring-zinc-800 md:h-3 md:w-3"></div>
-        </div>
-        <div className="hidden flex-1 md:block md:text-left">
-          <p className="max-w-[120px] truncate text-sm font-medium text-white">
-            {displayName}
-          </p>
-          <p className="max-w-[120px] truncate text-xs text-zinc-400">
-            {user.email}
-          </p>
+          <div className="hidden sm:flex sm:flex-col sm:flex-1 sm:text-left min-w-0">
+            <p className="text-sm font-semibold text-white truncate">
+              {displayName}
+            </p>
+            <p className="text-xs text-slate-400 truncate">
+              {user.email}
+            </p>
+          </div>
         </div>
         <svg
-          className={`h-3 w-3 md:h-4 md:w-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -137,16 +149,17 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ variant = 'st
       {isOpen && createPortal(
         <div 
           ref={dropdownRef}
-          className="fixed w-56 rounded-3xl border border-white/10 bg-black/60 p-2 shadow-2xl backdrop-blur-2xl md:w-64"
+          className="fixed w-64 sm:w-72 border border-white/10 bg-[rgba(15,23,42,0.95)] backdrop-blur-xl p-3 shadow-2xl"
           style={{ 
             top: dropdownPosition.top,
             right: dropdownPosition.right,
-            zIndex: 999999 
+            zIndex: 999999,
+            borderRadius: 'var(--border-radius)'
           }}
         >
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-4">
+          <div className="border border-white/10 bg-white/5 p-3 sm:p-4" style={{ borderRadius: 'var(--border-radius)' }}>
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 overflow-hidden" style={{ borderRadius: '50%' }}>
                 <img 
                   src={getAvatarUrl(profile.selectedAvatar || `avatar${displayName.charCodeAt(0) % 12 + 1}`, displayName)}
                   alt={displayName}
@@ -164,27 +177,29 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({ variant = 'st
             </div>
           </div>
 
-          <div className="p-2">
+          <div className="p-2 space-y-2">
             <button
               onClick={handleEditProfile}
               onMouseDown={(e) => e.preventDefault()}
-              className="flex w-full items-center space-x-3 rounded-2xl border border-white/10 bg-white/10 px-3 py-2.5 text-left text-sm text-white transition hover:border-white/30"
+              className="flex w-full items-center gap-3 border border-white/10 bg-white/5 px-3 py-2.5 text-left text-sm text-white transition hover:bg-white/10 hover:border-white/20"
+              style={{ borderRadius: 'var(--border-radius)' }}
             >
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              <span className="text-sm font-medium">Edit Profile</span>
+              <span className="font-medium">Edit Profile</span>
             </button>
 
             <button
               onClick={handleLogout}
               onMouseDown={(e) => e.preventDefault()}
-              className="mt-2 flex w-full items-center space-x-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-left text-sm text-red-100 transition hover:border-red-400/50"
+              className="flex w-full items-center gap-3 border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-left text-sm text-red-100 transition hover:bg-red-500/20 hover:border-red-400/50"
+              style={{ borderRadius: 'var(--border-radius)' }}
             >
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span className="text-sm font-medium">Sign Out</span>
+              <span className="font-medium">Sign Out</span>
             </button>
           </div>
         </div>,

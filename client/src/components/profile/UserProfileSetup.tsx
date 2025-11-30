@@ -48,20 +48,20 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
   };
 
   return (
-    <div className="app-shell flex items-center justify-center px-4 py-10 text-white">
+    <div className="app-shell text-white flex flex-col overflow-hidden">
       <div className="app-grid" />
       <div className="glow-pill bg-blue-900/30 -top-10 -left-6" />
       <div className="glow-pill bg-sky-500/30 bottom-0 right-0" />
 
-      <div className="relative z-10 w-full max-w-3xl">
-        <div className="frosted-card rounded-[32px] p-6 md:p-10">
+      <div className="relative z-10 flex items-center justify-center h-full p-3 sm:p-4">
+        <div className="border border-white/10 bg-[rgba(15,23,42,0.75)] backdrop-blur-md p-4 sm:p-6 w-full max-w-3xl" style={{ borderRadius: 'var(--border-radius)' }}>
           <div className="text-center">
             <p className="pill-badge bg-white/10 text-slate-200">PROFILE</p>
-            <h1 className="mt-4 text-3xl font-semibold md:text-4xl">Lock in your Whisper identity</h1>
-            <p className="mt-3 text-slate-300">Claim a nickname and choose from art-grade portraits crafted with DiceBear’s adventurer set. Every option stays crisp on 4K displays.</p>
+            <h1 className="mt-2 font-semibold text-xl sm:text-2xl">Lock in your Whisper identity</h1>
+            <p className="mt-2 text-slate-300 text-xs sm:text-sm">Claim a nickname and choose from art-grade portraits crafted with DiceBear's adventurer set. Every option stays crisp on 4K displays.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-8">
+          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <Input
               id="nickname"
               label="Display nickname"
@@ -75,10 +75,10 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
 
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-300">Avatar gallery</label>
-                <span className="text-xs text-slate-400">Adventurer series • 4K ready</span>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">Avatar gallery</label>
+                <span className="text-[10px] text-slate-400">Adventurer series • 4K ready</span>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+              <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {AVATAR_OPTIONS.map((avatar) => {
                   const isActive = selectedAvatar === avatar.id;
                   return (
@@ -86,55 +86,57 @@ export const UserProfileSetup: React.FC<UserProfileSetupProps> = ({
                       key={avatar.id}
                       type="button"
                       onClick={() => setSelectedAvatar(avatar.id)}
-                      className={`group flex flex-col items-center gap-3 rounded-[32px] border-2 px-4 py-4 transition ${
-                        isActive ? 'border-white bg-white/10 shadow-2xl shadow-blue-500/20' : 'border-transparent bg-white/5 hover:border-white/40'
+                      className={`group flex items-center justify-center border-2 p-2 transition ${
+                        isActive ? 'border-white bg-white/10 shadow-lg shadow-blue-500/20' : 'border-white/5 bg-white/5 hover:border-white/30'
                       }`}
+                      style={{ borderRadius: 'var(--border-radius)' }}
                     >
                       <div
-                        className={`relative flex h-24 w-24 items-center justify-center rounded-[36px] border-2 ${
+                        className={`relative flex h-16 w-16 items-center justify-center border-2 ${
                           isActive ? 'border-white/80' : 'border-white/10'
                         }`}
-                        style={{ backgroundImage: avatar.gradient }}
+                        style={{ backgroundImage: avatar.gradient, borderRadius: 'var(--border-radius)' }}
                       >
                         <img
                           src={getAvatarUrl(avatar.id, nickname)}
-                          alt={avatar.name}
-                          className="h-20 w-20 rounded-3xl object-cover"
+                          alt="Avatar"
+                          className="h-14 w-14 object-cover"
+                          style={{ borderRadius: 'var(--border-radius)' }}
                           loading="lazy"
                         />
                       </div>
-                      <p className="text-sm font-semibold text-white">{avatar.name}</p>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#07142b]/80 p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Preview</p>
-              <div className="mt-3 flex items-center gap-3">
-                <div className="h-16 w-16 rounded-2xl border border-white/20 bg-black/40 p-1">
+            <div className="border border-white/10 bg-[#07142b]/80 p-3" style={{ borderRadius: 'var(--border-radius)' }}>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400">Preview</p>
+              <div className="mt-2 flex items-center gap-3">
+                <div className="h-12 w-12 border border-white/20 bg-black/40 p-1" style={{ borderRadius: 'var(--border-radius)' }}>
                   <img
                     src={getAvatarUrl(selectedAvatar, nickname)}
                     alt="Selected avatar"
-                    className="h-full w-full rounded-xl object-cover"
+                    className="h-full w-full object-cover"
+                    style={{ borderRadius: 'var(--border-radius)' }}
                     loading="lazy"
                   />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold">{nickname || 'Your Nickname'}</p>
-                  <p className="text-sm text-slate-400">{currentUser.email}</p>
+                  <p className="text-base font-semibold">{nickname || 'Your Nickname'}</p>
+                  <p className="text-xs text-slate-400">{currentUser.email}</p>
                 </div>
               </div>
             </div>
 
             {error && (
-              <div className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+              <div className="border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-100" style={{ borderRadius: 'var(--border-radius)' }}>
                 {error}
               </div>
             )}
 
-            <Button type="submit" disabled={isLoading || !nickname.trim()} size="lg" className="w-full">
+            <Button type="submit" disabled={isLoading || !nickname.trim()} className="w-full">
               {isLoading ? 'Saving…' : 'Continue to WhisperSpace'}
             </Button>
           </form>

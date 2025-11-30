@@ -1,4 +1,4 @@
-const DEFAULT_AVATAR_STYLE = 'adventurer-neutral';
+const DEFAULT_AVATAR_STYLE = 'fun-emoji';
 
 type AvatarOption = {
   id: string;
@@ -12,68 +12,76 @@ type AvatarOption = {
 
 export const AVATAR_OPTIONS: AvatarOption[] = [
   {
-    id: 'solstice',
-    name: 'Solstice Veil',
-    seed: 'solstice-veil',
+    id: 'avatar1',
+    name: '',
+    seed: 'Felix',
     gradient: 'linear-gradient(145deg,#ff8a05,#facc15)',
     accent: '#f97316',
-    backgroundColors: ['0b1120', '1f2937']
+    backgroundColors: ['ff8a05', 'facc15'],
+    style: 'fun-emoji'
   },
   {
-    id: 'nocturne',
-    name: 'Nocturne Bloom',
-    seed: 'nocturne-bloom',
+    id: 'avatar2',
+    name: '',
+    seed: 'Aneka',
     gradient: 'linear-gradient(145deg,#a855f7,#6366f1)',
     accent: '#a855f7',
-    backgroundColors: ['0e1034', '1f165f']
+    backgroundColors: ['a855f7', '6366f1'],
+    style: 'fun-emoji'
   },
   {
-    id: 'aether',
-    name: 'Aether Drift',
-    seed: 'aether-drift',
+    id: 'avatar3',
+    name: '',
+    seed: 'Leo',
     gradient: 'linear-gradient(145deg,#2dd4bf,#0ea5e9)',
     accent: '#22d3ee',
-    backgroundColors: ['031b2f', '0f2b46']
+    backgroundColors: ['2dd4bf', '0ea5e9'],
+    style: 'fun-emoji'
   },
   {
-    id: 'ember',
-    name: 'Ember Pulse',
-    seed: 'ember-pulse',
+    id: 'avatar4',
+    name: '',
+    seed: 'Luna',
     gradient: 'linear-gradient(145deg,#fb7185,#f472b6)',
     accent: '#fb7185',
-    backgroundColors: ['220c1c', '3b0f2f']
+    backgroundColors: ['fb7185', 'f472b6'],
+    style: 'fun-emoji'
   },
   {
-    id: 'mirage',
-    name: 'Mirage Arc',
-    seed: 'mirage-arc',
+    id: 'avatar5',
+    name: '',
+    seed: 'Max',
     gradient: 'linear-gradient(145deg,#38bdf8,#818cf8)',
     accent: '#60a5fa',
-    backgroundColors: ['071225', '152a4d']
+    backgroundColors: ['38bdf8', '818cf8'],
+    style: 'fun-emoji'
   },
   {
-    id: 'flora',
-    name: 'Flora Prism',
-    seed: 'flora-prism',
+    id: 'avatar6',
+    name: '',
+    seed: 'Sophie',
     gradient: 'linear-gradient(145deg,#4ade80,#22c55e)',
     accent: '#4ade80',
-    backgroundColors: ['041f18', '064e3b']
+    backgroundColors: ['4ade80', '22c55e'],
+    style: 'fun-emoji'
   },
   {
-    id: 'halo',
-    name: 'Halo Courier',
-    seed: 'halo-courier',
+    id: 'avatar7',
+    name: '',
+    seed: 'Oliver',
     gradient: 'linear-gradient(145deg,#f0abfc,#c084fc)',
     accent: '#d8b4fe',
-    backgroundColors: ['1a1028', '291347']
+    backgroundColors: ['f0abfc', 'c084fc'],
+    style: 'fun-emoji'
   },
   {
-    id: 'glacier',
-    name: 'Glacier Echo',
-    seed: 'glacier-echo',
+    id: 'avatar8',
+    name: '',
+    seed: 'Emma',
     gradient: 'linear-gradient(145deg,#67e8f9,#22d3ee)',
     accent: '#67e8f9',
-    backgroundColors: ['031b2d', '082f4a']
+    backgroundColors: ['67e8f9', '22d3ee'],
+    style: 'fun-emoji'
   }
 ];
 
@@ -96,15 +104,15 @@ export const getAvatarUrl = (avatarId: string, username: string = ''): string =>
   const params = new URLSearchParams({
     seed,
     backgroundType: 'gradientLinear',
-    radius: '45',
-    size: '360'
+    radius: '50',
+    size: '200'
   });
 
   avatar.backgroundColors.forEach(color => {
     params.append('backgroundColor', color);
   });
 
-  return `https://api.dicebear.com/7.x/${style}/png?${params.toString()}`;
+  return `https://api.dicebear.com/9.x/${style}/png?${params.toString()}`;
 };
 
 export const getAvatarName = (avatarId: string): string => findAvatar(avatarId).name;

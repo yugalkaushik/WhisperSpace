@@ -37,15 +37,15 @@ const Login = () => {
   };
 
   return (
-    <div className="app-shell flex items-center justify-center px-4 py-10 lg:px-10">
+    <div className="app-shell flex items-center justify-center px-3 sm:px-4 lg:px-10 overflow-hidden">
       <div className="app-grid" />
       <div className="glow-pill bg-blue-900/40 -top-10 -left-10" />
       <div className="glow-pill bg-sky-500/30 bottom-0 right-0" />
 
-      <div className={`relative z-10 grid w-full max-w-6xl gap-8 lg:grid-cols-[1.2fr_1fr] ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
-        <section className="space-y-8">
-          <div>
-            <h1 className="mt-4 text-4xl font-semibold leading-tight text-white md:text-5xl">
+      <div className={`relative z-10 grid w-full max-w-6xl gap-6 sm:gap-8 lg:grid-cols-[1.2fr_1fr] items-center ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
+        <section className="space-y-6 sm:space-y-8">
+          <div className="hidden lg:block">
+            <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white md:text-5xl">
               The modern lounge for private conversations.
             </h1>
             <p className="mt-4 max-w-2xl text-base text-slate-300 md:text-lg">
@@ -55,21 +55,27 @@ const Login = () => {
           </div>
         </section>
 
-        <section className="frosted-card neon-border p-6 sm:p-8">
+        <section className="border border-white/10 bg-[rgba(15,23,42,0.75)] backdrop-blur-md p-6 sm:p-8" style={{ borderRadius: 'var(--border-radius)' }}>
           <div className="space-y-6">
             <header className="space-y-3 text-center">
-              <p className="text-sm uppercase tracking-[0.5em] text-slate-400">Sign in</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Sign in</p>
               <h2 className="text-2xl font-semibold text-white">Join your private room</h2>
               <p className="text-sm text-slate-400">Authenticate with Google to sync your rooms and profile.</p>
             </header>
 
             {authError && (
-              <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+              <div className="border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-100" style={{ borderRadius: 'var(--border-radius)' }}>
                 {getErrorMessage(authError)}
               </div>
             )}
 
             <GoogleAuthButton />
+
+            <footer className="pt-2 text-center border-t border-white/5">
+              <p className="text-xs text-slate-500 mt-4">
+                By signing in, you agree to our privacy practices. No spam, no tracking—just conversations.
+              </p>
+            </footer>
 
           </div>
         </section>

@@ -1,8 +1,7 @@
 import { useContext, useEffect, useRef } from 'react';
-import { AuthContext } from '../../contexts/auth-context';
+import { AuthContext } from '../../contexts/AuthContext';
 import { useProfile } from '../../hooks/useProfile';
 import type { Message, User } from '../../types';
-import Avatar from '../ui/Avatar';
 import TypingIndicator from './TypingIndicator';
 import { formatMessageTime } from '../../utils/formatters';
 
@@ -18,16 +17,27 @@ const MessageList = ({ messages }: { messages: Message[] }) => {
     return messageUser.username;
   };
 
-  const getAvatarForUser = (messageUser: User) => {
-    if (user && messageUser._id === user._id) {
-      return profile.selectedAvatar;
+  // Generate consistent color for each user based on their ID
+  const getUserColor = (userId: string) => {
+    const colors = [
+      '#3b82f6', // blue
+      '#8b5cf6', // purple
+      '#ec4899', // pink
+      '#f59e0b', // amber
+      '#10b981', // green
+      '#06b6d4', // cyan
+      '#f97316', // orange
+      '#14b8a6', // teal
+      '#6366f1', // indigo
+      '#a855f7', // violet
+    ];
+    
+    // Use user ID to generate consistent color
+    let hash = 0;
+    for (let i = 0; i < userId.length; i++) {
+      hash = userId.charCodeAt(i) + ((hash << 5) - hash);
     }
-    let nameSum = 0;
-    for (let i = 0; i < messageUser.username.length; i++) {
-      nameSum += messageUser.username.charCodeAt(i);
-    }
-    const avatarNumber = (nameSum % 12) + 1;
-    return `avatar${avatarNumber}`;
+    return colors[Math.abs(hash) % colors.length];
   };
 
   useEffect(() => {
@@ -35,16 +45,16 @@ const MessageList = ({ messages }: { messages: Message[] }) => {
   }, [messages]);
 
   return (
-    <div className="flex-1 min-h-0 px-3 py-4 md:px-6 md:py-6">
+    <div className="h-full flex flex-col px-3 py-4 md:px-6 md:py-6 overflow-hidden">
       <div
-        className="modern-scroll h-full space-y-4 overflow-y-auto pr-1"
+        className="hide-scrollbar flex-1 space-y-3 overflow-y-auto"
         role="log"
         aria-live="polite"
         aria-label="Room messages"
       >
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center" role="status">
-            <div className="mb-4 rounded-2xl bg-white/5 p-4" aria-hidden="true">
+            <div className="mb-4 bg-white/5 p-4" style={{ borderRadius: 'var(--border-radius)' }} aria-hidden="true">
               <svg className="h-8 w-8 text-slate-400" viewBox="0 0 24 24" fill="none">
                 <path stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
@@ -53,37 +63,28 @@ const MessageList = ({ messages }: { messages: Message[] }) => {
             <p className="mt-1 text-sm text-slate-400">Say hi to kick things off.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {messages.map((msg) => {
               const isOwnMessage = user && msg.sender._id === user._id;
 
               return (
                 <article
                   key={msg._id}
-                  className={`flex items-start ${isOwnMessage ? 'flex-row-reverse text-right' : ''}`}
+                  className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
                   role="listitem"
                   aria-label={`${getDisplayName(msg.sender)} at ${formatMessageTime(msg.createdAt)}`}
                 >
-                  <div className={`mt-1 flex-shrink-0 ${isOwnMessage ? 'ml-3' : 'mr-3'}`}>
-                    <Avatar
-                      username={getDisplayName(msg.sender)}
-                      selectedAvatar={getAvatarForUser(msg.sender)}
-                      isOnline={msg.sender.isOnline}
-                      size="sm"
-                    />
-                  </div>
-                  <div className={`${isOwnMessage ? 'items-end' : 'items-start'} flex flex-col max-w-[80%] md:max-w-[70%]`}>
-                    <div className={`flex items-center gap-2 text-xs text-slate-400 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
-                      <span className="font-medium text-white">{getDisplayName(msg.sender)}</span>
-                      <span>{formatMessageTime(msg.createdAt)}</span>
+                  <div className="bg-black/80 border border-white/10 px-4 py-3 max-w-[85%]" style={{ borderRadius: 'var(--border-radius)' }}>
+                    <div className={`flex items-center gap-2 mb-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                      <span 
+                        className="text-xs font-medium" 
+                        style={{ color: isOwnMessage ? 'white' : getUserColor(msg.sender._id) }}
+                      >
+                        {getDisplayName(msg.sender)}
+                      </span>
+                      <span className="text-xs text-slate-400">{formatMessageTime(msg.createdAt)}</span>
                     </div>
-                    <div
-                      className={`mt-1 rounded-2xl border px-4 py-3 text-sm leading-relaxed shadow-lg transition-all ${
-                        isOwnMessage
-                          ? 'border-sky-500/40 bg-gradient-to-r from-[#0b2d58]/90 via-[#082146]/85 to-[#030913]/90 text-white'
-                          : 'border-white/10 bg-white/5 text-white'
-                      }`}
-                    >
+                    <div className="text-sm text-white leading-relaxed break-words">
                       {msg.content}
                     </div>
                   </div>

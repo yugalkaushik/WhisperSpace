@@ -1,9 +1,22 @@
-import { useState } from 'react';
+import { useState, createContext } from 'react';
 import type { ReactNode } from 'react';
 import type { Socket } from 'socket.io-client';
-import type { OnlineUser, Message, TypingUser, Room } from '../types';
+import type { OnlineUser, Message, TypingUser, Room, SocketContextType } from '../types';
 import { MESSAGE_TYPES } from '../utils/constants';
-import { SocketContext } from './socket-context';
+
+export const SocketContext = createContext<SocketContextType>({
+  socket: null,
+  connected: false,
+  onlineUsers: [],
+  messages: [],
+  typingUsers: [],
+  currentRoom: null,
+  sendMessage: () => {},
+  joinRoom: () => {},
+  leaveRoom: () => {},
+  startTyping: () => {},
+  stopTyping: () => {},
+});
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);

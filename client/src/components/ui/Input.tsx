@@ -16,6 +16,8 @@ interface InputProps {
   variant?: 'default' | 'bare';
   ariaLabel?: string;
   ariaDescribedBy?: string;
+  autoComplete?: string;
+  spellCheck?: boolean;
 }
 
 const Input = ({
@@ -33,16 +35,18 @@ const Input = ({
   helperText,
   variant = 'default',
   ariaLabel,
-  ariaDescribedBy
+  ariaDescribedBy,
+  autoComplete = 'off',
+  spellCheck = false
 }: InputProps) => {
   const baseClasses =
     variant === 'bare'
       ? 'w-full bg-transparent text-white placeholder-white/50 text-sm'
-      : 'w-full px-4 py-2.5 rounded-2xl bg-white/5 text-white border border-white/10 shadow-inner shadow-black/20 text-sm';
+      : 'w-full px-4 py-2.5 bg-white/5 text-white border border-white/10 shadow-inner shadow-black/20 text-sm';
 
   const interactionClasses =
     variant === 'bare'
-      ? 'focus:outline-none focus:ring-0 border-0'
+      ? 'focus:outline-none focus:ring-0 focus:border-0 border-0'
       : 'transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50';
 
   const readOnlyClasses = readOnly ? 'cursor-default opacity-70' : variant === 'bare' ? '' : 'hover:bg-white/8';
@@ -68,6 +72,9 @@ const Input = ({
         readOnly={readOnly}
         aria-label={ariaLabel}
         aria-describedby={ariaDescribedBy}
+        autoComplete={autoComplete}
+        spellCheck={spellCheck}
+        style={{ borderRadius: 'var(--border-radius)' }}
         className={`${baseClasses} ${interactionClasses} ${readOnlyClasses} ${className || ''}`.trim()}
       />
       {helperText && !error && (

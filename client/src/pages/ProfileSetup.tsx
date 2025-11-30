@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserProfileSetup } from '../components/profile/UserProfileSetup';
-import { AuthContext } from '../contexts/auth-context';
+import { AuthContext } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
@@ -94,7 +94,7 @@ const ProfileSetupPage: React.FC = () => {
 
   if (!user || isAuthenticating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="h-screen flex items-center justify-center bg-black overflow-hidden" style={{ height: '100dvh' }}>
         <div className="text-center p-8 bg-zinc-900/50 backdrop-blur-xl rounded-2xl border border-zinc-700">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-indigo-500 border-t-transparent mx-auto mb-4"></div>
           <p className="text-white font-medium mb-2">

@@ -1,7 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, createContext } from 'react';
 import type { ReactNode } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { ThemeContext } from './theme-context';
+import type { ThemeContextType } from '../types';
+
+export const ThemeContext = createContext<ThemeContextType>({
+  theme: 'light',
+  toggleTheme: () => {},
+});
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('chatflow_theme', 'light');
