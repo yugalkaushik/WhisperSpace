@@ -12,7 +12,6 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import xss from 'xss-clean';
 import { body, validationResult } from 'express-validator';
 
 // Import configurations
@@ -119,9 +118,6 @@ app.use(helmet({
   },
   crossOriginEmbedderPolicy: false, // For Socket.IO compatibility
 }));
-
-// XSS Protection - Sanitize user input
-app.use(xss());
 
 // Rate limiting - Prevent DoS attacks
 const limiter = rateLimit({
