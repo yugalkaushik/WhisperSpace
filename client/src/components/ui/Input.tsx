@@ -5,6 +5,7 @@ interface InputProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: () => void;
   placeholder?: string;
   className?: string;
   maxLength?: number;
@@ -25,6 +26,7 @@ const Input = ({
   value,
   onChange,
   onKeyDown,
+  onFocus,
   placeholder,
   className,
   maxLength,
@@ -67,6 +69,7 @@ const Input = ({
         value={value}
         onChange={onChange}
         onKeyDown={onKeyDown}
+        onFocus={onFocus}
         placeholder={placeholder}
         maxLength={maxLength}
         readOnly={readOnly}

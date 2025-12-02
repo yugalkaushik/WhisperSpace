@@ -9,6 +9,7 @@ const MessageList = ({ messages }: { messages: Message[] }) => {
   const { user } = useContext(AuthContext);
   const { profile } = useProfile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const getDisplayName = (messageUser: User) => {
     if (user && messageUser._id === user._id) {
@@ -40,13 +41,40 @@ const MessageList = ({ messages }: { messages: Message[] }) => {
     return colors[Math.abs(hash) % colors.length];
   };
 
+  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Handle viewport resize (keyboard opening on mobile)
+  useEffect(() => {
+    const handleResize = () => {
+      // Scroll to bottom when keyboard opens/closes
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    };
+
+    const handleFocus = () => {
+      // When input gets focus (keyboard opens), scroll to bottom
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 300); // Delay for keyboard animation
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('focusin', handleFocus);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('focusin', handleFocus);
+    };
+  }, []);
+
   return (
     <div className="h-full flex flex-col px-3 py-4 md:px-6 md:py-6 overflow-hidden">
       <div
+        ref={scrollContainerRef}
         className="hide-scrollbar flex-1 space-y-3 overflow-y-auto"
         role="log"
         aria-live="polite"
@@ -92,7 +120,7 @@ const MessageList = ({ messages }: { messages: Message[] }) => {
               );
             })}
             <TypingIndicator />
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} data-scroll-anchor />
           </div>
         )}
       </div>

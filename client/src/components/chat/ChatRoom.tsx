@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Copy, Check, LogOut, Users, ChevronRight } from 'lucide-react';
 import MessageList from './MessageList';
@@ -25,6 +25,7 @@ const ChatRoom = ({ initialRoom }: ChatRoomProps) => {
   const [copyAnnouncement, setCopyAnnouncement] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const messageListRef = useRef<{ scrollToBottom: () => void } | null>(null);
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -70,6 +71,19 @@ const ChatRoom = ({ initialRoom }: ChatRoomProps) => {
       console.warn('No current room to leave or no token');
       navigate('/rooms');
     }
+  };
+
+  const handleInputFocus = () => {
+    // Scroll to bottom when input is focused (keyboard opens on mobile)
+    setTimeout(() => {
+      const messageContainer = document.querySelector('[role="log"]');
+      if (messageContainer) {
+        const scrollTarget = messageContainer.querySelector('[data-scroll-anchor]');
+        if (scrollTarget) {
+          scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+      }
+    }, 300);
   };
 
   const roomDisplayName = currentRoom?.name ?? initialRoom?.name ?? 'Syncing room…';
@@ -175,7 +189,7 @@ const ChatRoom = ({ initialRoom }: ChatRoomProps) => {
                   <MessageList messages={messages} />
                 </div>
                 <div className="flex-shrink-0">
-                  <MessageInput variant="embedded" />
+                  <MessageInput variant="embedded" onFocus={handleInputFocus} />
                 </div>
               </div>
             </div>

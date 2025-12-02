@@ -7,9 +7,10 @@ import EmojiPicker from 'emoji-picker-react';
 
 interface MessageInputProps {
   variant?: 'standalone' | 'embedded';
+  onFocus?: () => void;
 }
 
-const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
+const MessageInput = ({ variant = 'standalone', onFocus }: MessageInputProps) => {
   const helperTextId = 'message-input-helper';
 
   const [message, setMessage] = useState('');
@@ -18,6 +19,7 @@ const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const getRoomCode = useCallback(() => {
     if (currentRoom?.code) {
@@ -130,6 +132,12 @@ const MessageInput = ({ variant = 'standalone' }: MessageInputProps) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               handleSend();
+            }
+          }}
+          onFocus={() => {
+            // Trigger scroll when input is focused
+            if (onFocus) {
+              onFocus();
             }
           }}
           placeholder="Type a message..."
