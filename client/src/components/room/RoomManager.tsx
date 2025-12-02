@@ -165,30 +165,30 @@ const RoomManager = () => {
       <div className="glow-pill bg-blue-900/40 -top-10 -left-6" />
       <div className="glow-pill bg-sky-600/30 bottom-0 right-0" />
 
-      <div className="relative z-10 flex flex-1 overflow-hidden">
-        <div className="flex flex-1 justify-center bg-[#050505] p-3 sm:p-4 md:p-6 overflow-hidden">
-          <div className="flex flex-col w-full max-w-6xl gap-4 sm:gap-6">
+      <div className="relative z-10 flex flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-1 justify-center bg-[#050505] p-2 sm:p-4 md:p-6 overflow-y-auto">
+          <div className="flex flex-col w-full max-w-6xl gap-3 sm:gap-6 my-2">
             {/* Header */}
-            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-start sm:justify-between flex-shrink-0">
+            <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-start sm:justify-between flex-shrink-0">
               <div>
                 <span className="pill-badge bg-white/5 text-slate-200">Control center</span>
-                <h1 className="mt-2 sm:mt-3 font-semibold tracking-tight text-white text-2xl sm:text-3xl md:text-4xl">
+                <h1 className="mt-1 sm:mt-3 font-semibold tracking-tight text-white text-xl sm:text-3xl md:text-4xl">
                   WhisperSpace Rooms
                 </h1>
-                <p className="text-slate-400 text-sm sm:text-base mt-1 sm:mt-2">
+                <p className="text-slate-400 text-xs sm:text-base mt-0.5 sm:mt-2">
                   Spin up a fresh invite-only room or hop back into an existing space.
                 </p>
               </div>
               <div className="flex w-full justify-end sm:w-auto flex-shrink-0">
                 <div className="flex w-full overflow-hidden border border-white/10 bg-[#0c0c0c] sm:w-auto" style={{ borderRadius: 'var(--border-radius)' }}>
-                  <div className="flex h-14 sm:h-16 flex-1 items-center gap-3 border-r border-white/10 px-3 sm:px-4">
+                  <div className="flex h-12 sm:h-16 flex-1 items-center gap-2 sm:gap-3 border-r border-white/10 px-2 sm:px-4">
                     <div className="relative flex h-2.5 w-2.5 items-center justify-center flex-shrink-0">
                       <span className="absolute inline-flex h-full w-full animate-ping bg-sky-400/50" style={{ borderRadius: '50%' }} />
                       <span className="relative inline-flex h-2.5 w-2.5 bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.9)]" style={{ borderRadius: '50%' }} />
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.3em] text-slate-400">Status</p>
-                      <p className="text-sm font-semibold text-white truncate">Online</p>
+                      <p className="text-[9px] sm:text-[11px] uppercase tracking-[0.3em] text-slate-400">Status</p>
+                      <p className="text-xs sm:text-sm font-semibold text-white truncate">Online</p>
                     </div>
                   </div>
                   <div>

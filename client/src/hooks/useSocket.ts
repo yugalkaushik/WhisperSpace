@@ -15,6 +15,11 @@ export const useSocket = (roomCode?: string) => {
     if (user && token && normalizedRoomCode) {
       const socket = io(SOCKET_URL, {
         auth: { token },
+        transports: ['websocket', 'polling'], // Try WebSocket first, fallback to polling
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 20000,
       });
 
       socket.on('connect', () => {
@@ -24,7 +29,10 @@ export const useSocket = (roomCode?: string) => {
         // Clear messages to start fresh (ephemeral messages only)
         setMessages?.([]);
         
-        socket.emit('join_room', normalizedRoomCode);
+        // Wait a brief moment to ensure socket is fully ready before joining
+        setTimeout(() => {
+          socket.emit('join_room', normalizedRoomCode);
+        }, 100);
       });
 
       socket.on('users_online', (users: OnlineUser[]) => {
@@ -52,19 +60,6 @@ export const useSocket = (roomCode?: string) => {
         // Clear messages and current room when leaving
         setMessages?.([]);
         setCurrentRoom?.(null);
-        
-      });
-
-      socket.on('error', (error: { message: string }) => {
-        console.error('❌ Socket error:', error);
-      });
-
-      socket.on('connect_error', (error) => {
-        console.error('❌ Socket connection error:', error);
-      });
-
-      socket.on('disconnect', (reason) => {
-        console.log('🔌 Socket disconnected:', reason);
       });
 
       return () => {
@@ -76,9 +71,6 @@ export const useSocket = (roomCode?: string) => {
         socket.off('user_stop_typing');
         socket.off('joined_room');
         socket.off('left_room');
-        socket.off('error');
-        socket.off('connect_error');
-        socket.off('disconnect');
         socket.disconnect();
         setSocketInstance(null);
         setSocket?.(null);

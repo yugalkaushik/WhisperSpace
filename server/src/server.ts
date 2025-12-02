@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express, { Request, Response } from 'express';
+import express from 'express';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import cors from 'cors';
@@ -12,7 +12,6 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { body, validationResult } from 'express-validator';
 
 // Import configurations
 import connectDB from './config/database';
@@ -82,6 +81,10 @@ const deleteRoomIfEmpty = async (roomCode: string, candidateRoom?: IRoom | null)
 };
 
 const app = express();
+
+// Trust proxy - Required for secure cookies behind reverse proxy (Render, Vercel, etc.)
+app.set('trust proxy', 1);
+
 const server = createServer(app);
 const CLIENT_ORIGIN = getClientBaseUrl();
 const SESSION_SECRET = getSessionSecret();
@@ -94,7 +97,11 @@ const io = new Server(server, {
     origin: CLIENT_ORIGIN,
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  transports: ['websocket', 'polling'], // Ensure WebSocket is preferred but fallback to polling
+  allowEIO3: true, // Allow Engine.IO v3 clients
+  pingTimeout: 60000, // Increase timeout for slower connections
+  pingInterval: 25000, // Ping interval
 });
 
 // Connect to database
@@ -106,17 +113,19 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", CLIENT_ORIGIN],
-      fontSrc: ["'self'", "data:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com"],
+      imgSrc: ["'self'", "data:", "https:", "https://accounts.google.com", "https://*.googleusercontent.com"],
+      connectSrc: ["'self'", CLIENT_ORIGIN, "https://accounts.google.com"],
+      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
+      frameSrc: ["'self'", "https://accounts.google.com"],
+      frameAncestors: ["'self'"],
     },
   },
   crossOriginEmbedderPolicy: false, // For Socket.IO compatibility
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resources
 }));
 
 // Rate limiting - Prevent DoS attacks
@@ -158,8 +167,12 @@ app.use(session({
   }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Required for cross-origin on iOS
+    domain: process.env.NODE_ENV === 'production' ? undefined : undefined, // Let browser set the domain
+  },
+  proxy: process.env.NODE_ENV === 'production', // Trust first proxy (required for secure cookies behind reverse proxy)
 }));
 
 // Passport middleware
@@ -192,47 +205,6 @@ app.post('/api/admin/cleanup/manual', async (req: any, res: any) => {
   } catch (error) {
     console.error('Error in manual cleanup:', error);
     res.status(500).json({ error: 'Failed to perform manual cleanup' });
-  }
-});
-
-// Test endpoint to manually mark a room as empty (for testing)
-app.post('/api/admin/rooms/:roomCode/mark-empty', async (req: any, res: any) => {
-  try {
-    const { roomCode } = req.params;
-    const result = await Room.findOneAndUpdate(
-      { code: roomCode.toUpperCase() },
-      { 
-        emptyAt: new Date(),
-        isActive: false 
-      },
-      { new: true }
-    );
-    
-    if (!result) {
-      return res.status(404).json({ error: 'Room not found' });
-    }
-    
-    res.json({ 
-      message: `Room ${roomCode} marked as empty`,
-      room: result 
-    });
-  } catch (error) {
-    console.error('Error marking room as empty:', error);
-    res.status(500).json({ error: 'Failed to mark room as empty' });
-  }
-});
-
-// Admin endpoint to delete all rooms (for testing)
-app.delete('/api/admin/rooms/all', async (req: any, res: any) => {
-  try {
-    const result = await Room.deleteMany({});
-    res.json({ 
-      message: `Deleted all rooms`,
-      deletedCount: result.deletedCount
-    });
-  } catch (error) {
-    console.error('Error deleting all rooms:', error);
-    res.status(500).json({ error: 'Failed to delete all rooms' });
   }
 });
 
@@ -510,10 +482,6 @@ io.on('connection', async (socket: any) => {
       userId: socket.userId
     });
   });
-
-  // Handle message editing (REMOVED - messages are now ephemeral)
-  
-  // Handle message deletion (REMOVED - messages are now ephemeral)
 
   // Handle disconnect
   socket.on('disconnect', async () => {

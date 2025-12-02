@@ -38,12 +38,12 @@ const Login = () => {
   };
 
   return (
-    <div className="app-shell flex items-center justify-center px-3 sm:px-4 lg:px-10 overflow-hidden">
+    <div className="app-shell flex items-center justify-center px-3 sm:px-4 lg:px-10 overflow-y-auto">
       <div className="app-grid" />
       <div className="glow-pill bg-blue-900/40 -top-10 -left-10" />
       <div className="glow-pill bg-sky-500/30 bottom-0 right-0" />
 
-      <div className={`relative z-10 grid w-full max-w-6xl gap-6 sm:gap-8 lg:grid-cols-[1.2fr_1fr] items-center ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
+      <div className={`relative z-10 grid w-full max-w-6xl gap-6 sm:gap-8 lg:grid-cols-[1.2fr_1fr] items-center my-4 ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
         <section className="space-y-6 sm:space-y-8">
           <div className="hidden lg:block">
             <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white md:text-5xl">

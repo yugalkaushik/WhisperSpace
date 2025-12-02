@@ -59,13 +59,11 @@ const EmailAuthForm = () => {
     setIsSubmitting(true);
 
     try {
-      console.log('Sending OTP to:', formData.email);
       // Send OTP to email
-      const response = await sendOTP({ 
+      await sendOTP({ 
         email: formData.email, 
         purpose: isLoginMode ? 'login' : 'registration' 
       });
-      console.log('OTP sent successfully:', response);
       
       // Show OTP verification screen
       setShowOTPVerification(true);

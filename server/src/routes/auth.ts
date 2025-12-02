@@ -51,6 +51,4 @@ router.put('/profile', authenticateToken as any, updateProfile as any);
 // Logout route
 router.post('/logout', authenticateToken as any, logout as any);
 
-
-
 export default router;

@@ -92,27 +92,27 @@ const ChatRoom = ({ initialRoom }: ChatRoomProps) => {
         </>
       )}
 
-      <div className="relative z-10 flex flex-1 overflow-hidden">
-        <div className="flex flex-1 justify-center bg-[#050505] p-3 sm:p-4 md:p-6 overflow-hidden">
+      <div className="relative z-10 flex flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-1 justify-center bg-[#050505] p-2 sm:p-4 md:p-6 overflow-hidden">
           <div className="flex w-full max-w-7xl gap-3 sm:gap-4">
             {/* Participants Panel - Desktop only */}
             {!isMobile && <UserList isMobileSidebar={false} />}
             
             {/* Main Chat Container */}
-            <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
               {/* Header Section */}
-              <div className="flex flex-col gap-3 sm:gap-4 mb-3 sm:mb-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                  <div className="flex-1 border border-white/10 bg-[#0c0c0c] px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5" style={{ borderRadius: 'var(--border-radius)' }}>
+              <div className="flex flex-col gap-2 sm:gap-4 mb-2 sm:mb-4 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+                  <div className="flex-1 border border-white/10 bg-[#0c0c0c] px-3 sm:px-4 md:px-6 py-2 sm:py-4 md:py-5" style={{ borderRadius: 'var(--border-radius)' }}>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs uppercase tracking-[0.45em] text-slate-400">
                       <span>Current room</span>
                       <span className="flex items-center gap-1 bg-sky-500/10 px-2 sm:px-3 py-1 text-[9px] sm:text-[10px] font-semibold text-sky-200" style={{ borderRadius: 'var(--border-radius)' }}>
                         ● {currentRoom ? 'Live' : 'Syncing'}
                       </span>
                     </div>
-                    <div className="mt-2 sm:mt-3 space-y-3 sm:space-y-4">
-                      <div className="space-y-1 sm:space-y-2">
-                        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold leading-tight text-white">{roomDisplayName}</h1>
+                    <div className="mt-1 sm:mt-3 space-y-2 sm:space-y-4">
+                      <div className="space-y-0.5 sm:space-y-2">
+                        <h1 className="text-lg sm:text-2xl md:text-3xl font-semibold leading-tight text-white">{roomDisplayName}</h1>
                         {!currentRoom && (
                           <p className="text-xs sm:text-sm text-slate-400">We are pairing you with the space.</p>
                         )}
@@ -170,7 +170,7 @@ const ChatRoom = ({ initialRoom }: ChatRoomProps) => {
               </div>
 
               {/* Chat Messages Area */}
-              <div className="flex-1 flex flex-col border border-white/10 bg-[#090909] overflow-hidden" style={{ borderRadius: 'var(--border-radius)' }}>
+              <div className="flex-1 min-h-0 flex flex-col border border-white/10 bg-[#090909] overflow-hidden" style={{ borderRadius: 'var(--border-radius)' }}>
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <MessageList messages={messages} />
                 </div>
