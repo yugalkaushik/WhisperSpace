@@ -106,13 +106,13 @@ export class RoomCleanupService {
           const lastActivity = room.lastMessageAt || room.createdAt;
           console.log(`🗑️  Deleted room "${room.name}" (${room.code}) - last activity: ${lastActivity}`);
         } catch (error) {
-          console.error(`❌ Failed to delete room ${room.code}:`, error);
+          console.error(`Error: Failed to delete room ${room.code}:`, error);
         }
       }
 
       console.log(`✅ Room cleanup completed: ${roomsToDelete.length} rooms deleted`);
     } catch (error) {
-      console.error('❌ Room cleanup error:', error);
+      console.error('Error: Room cleanup error:', error);
     }
   }
 
@@ -164,13 +164,13 @@ export class RoomCleanupService {
         } catch (error) {
           const errorMsg = `Failed to delete room ${room.code}: ${error}`;
           result.errors.push(errorMsg);
-          console.error(`❌ ${errorMsg}`);
+          console.error(`Error: ${errorMsg}`);
         }
       }
     } catch (error) {
       const errorMsg = `Manual cleanup failed: ${error}`;
       result.errors.push(errorMsg);
-      console.error(`❌ ${errorMsg}`);
+      console.error(`Error: ${errorMsg}`);
     }
 
     return result;

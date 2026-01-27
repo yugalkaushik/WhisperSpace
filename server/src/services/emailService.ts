@@ -180,7 +180,7 @@ If you didn't request this OTP, please ignore this email.
     console.log('✅ Email sent successfully:', info.messageId);
     return true;
   } catch (error) {
-    console.error('❌ Error sending email:', error);
+    console.error('Error: Error sending email:', error);
     return false;
   }
 };

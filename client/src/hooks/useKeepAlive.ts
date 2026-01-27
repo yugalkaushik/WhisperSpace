@@ -33,7 +33,7 @@ export const useKeepAlive = (options: UseKeepAliveOptions = {}) => {
         });
         lastPingRef.current = Date.now();
       } catch (error) {
-        console.error('❌ Keep-alive ping failed:', error);
+        console.error('Error: Keep-alive ping failed:', error);
       }
     };
 

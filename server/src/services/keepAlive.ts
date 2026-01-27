@@ -74,9 +74,9 @@ class KeepAliveService {
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error(`❌ Keep-alive ping failed: ${error.message}`);
+        console.error(`Error: Keep-alive ping failed: ${error.message}`);
       } else {
-        console.error('❌ Keep-alive ping failed:', error);
+        console.error('Error: Keep-alive ping failed:', error);
       }
     }
   }

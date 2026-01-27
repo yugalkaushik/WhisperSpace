@@ -180,7 +180,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 app.use('/api/rooms', roomRoutes);
 
@@ -244,7 +244,7 @@ io.use(async (socket: any, next) => {
     const token = socket.handshake.auth.token;
     
     if (!token) {
-      console.log('❌ No token provided in socket auth');
+      console.log('Error: No token provided in socket auth');
       return next(new Error('Authentication error'));
     }
 
@@ -253,7 +253,7 @@ io.use(async (socket: any, next) => {
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      console.log('❌ User not found for token');
+      console.log('Error: User not found for token');
       return next(new Error('User not found'));
     }
 
@@ -262,7 +262,7 @@ io.use(async (socket: any, next) => {
     console.log(`✅ Socket authenticated for user: ${user.username} (${socket.userId})`);
     next();
   } catch (error) {
-    console.log('❌ Socket authentication error:', error);
+    console.log('Error: Socket authentication error:', error);
     next(new Error('Authentication error'));
   }
 });
@@ -391,7 +391,7 @@ io.on('connection', async (socket: any) => {
 
       // SECURITY: Validate content
       if (!content || typeof content !== 'string') {
-        console.log('❌ Message rejected: invalid content type');
+        console.log('Error: Message rejected: invalid content type');
         socket.emit('error', { message: 'Invalid message content' });
         return;
       }
@@ -400,7 +400,7 @@ io.on('connection', async (socket: any) => {
       
       // SECURITY: Check for empty content
       if (!trimmedContent) {
-        console.log('❌ Message rejected: empty content');
+        console.log('Error: Message rejected: empty content');
         socket.emit('error', { message: 'Message content is required' });
         return;
       }
@@ -408,14 +408,14 @@ io.on('connection', async (socket: any) => {
       // SECURITY: Enforce maximum message length (prevent abuse)
       const MAX_MESSAGE_LENGTH = 5000;
       if (trimmedContent.length > MAX_MESSAGE_LENGTH) {
-        console.log(`❌ Message rejected: too long (${trimmedContent.length} chars)`);
+        console.log(`Error: Message rejected: too long (${trimmedContent.length} chars)`);
         socket.emit('error', { message: `Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.` });
         return;
       }
 
       // SECURITY: Validate room
       if (!normalizedRoom) {
-        console.log('❌ Message rejected: no room specified');
+        console.log(' Message rejected: no room specified');
         socket.emit('error', { message: 'Room is required' });
         return;
       }
@@ -453,7 +453,7 @@ io.on('connection', async (socket: any) => {
       io.to(normalizedRoom).emit('new_message', messageData);
 
     } catch (error) {
-      console.error('❌ Send message error:', error);
+      console.error('Error: Send message error:', error);
       socket.emit('error', { message: 'Failed to send message' });
     }
   });
